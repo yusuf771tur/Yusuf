@@ -82,6 +82,17 @@
             }
         };
 
+        window.react = async (id, type) => {
+    const docRef = doc(db, "requests", id);
+            try {
+                await updateDoc(docRef, {
+                    [`reactions.${type}`]: increment(1)
+                });
+            } catch (e) {
+                console.error("Reaction error:", e);
+            }
+        };
+
         // МЕТОД: ЗАПИСЬ С ВАЛИДАЦИЕЙ
         document.getElementById('mainBtn').onclick = async () => {
             const btn = document.getElementById('mainBtn');
@@ -94,6 +105,14 @@
                     name: nameInput.value,
                     email: emailInput.value,
                     likes: 0,
+                    dislikes: 0,
+                    reactions: {
+                        like: 0,
+                        dislike: 0,
+                        fire: 0,
+                        laugh: 0
+                    },
+                
                     timestamp: serverTimestamp()
                 });
                
@@ -123,9 +142,25 @@
                     <b>${data.name}</b>
                     <p style="margin: 5px 0;">${data.email}</p>
             
-                    <button class="like-btn" onclick="processLike('${doc.id}')">
-                        👍 ${data.likes || 0}
+                   <div style="display:flex; gap:5px; flex-wrap:wrap;">
+
+                    <button class="like-btn" onclick="react('${doc.id}', 'like')">
+                    👍 ${data.reactions?.like || 0}
                     </button>
+                    
+                    <button class="like-btn" onclick="react('${doc.id}', 'dislike')">
+                    👎 ${data.reactions?.dislike || 0}
+                    </button>
+                    
+                    <button class="like-btn" onclick="react('${doc.id}', 'fire')">
+                    🔥 ${data.reactions?.fire || 0}
+                    </button>
+                    
+                    <button class="like-btn" onclick="react('${doc.id}', 'laugh')">
+                    😂 ${data.reactions?.laugh || 0}
+                    </button>
+                    
+                    </div>
             
                     <button onclick="editPost('${doc.id}', '${data.name}', '${data.email}')" 
                     style="margin-left:10px; background:#ffc107; border:none; padding:5px 10px; border-radius:6px; cursor:pointer;">
