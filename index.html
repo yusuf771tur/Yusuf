@@ -29,11 +29,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import {
-            getFirestore, collection, addDoc, query, orderBy, onSnapshot,
-            serverTimestamp, updateDoc, doc, increment
-        } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
+       import {
+                getFirestore, collection, addDoc, query, orderBy, onSnapshot,
+                serverTimestamp, updateDoc, doc, increment, deleteDoc
+                } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        
         // КОНФИГУРАЦИЯ
             const firebaseConfig = {
               apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
@@ -55,6 +55,30 @@
                 await updateDoc(docRef, { likes: increment(1) });
             } catch (e) {
                 console.error("Validation Error:", e.message);
+            }
+        };
+
+        window.deletePost = async (id) => {
+            if (!confirm("Удалить запись?")) return;
+            try {
+                await deleteDoc(doc(db, "requests", id));
+            } catch (e) {
+                console.error("Ошибка удаления:", e);
+            }
+        };
+
+        window.editPost = async (id, oldName, oldEmail) => {
+            const newName = prompt("Новое имя:", oldName);
+            const newEmail = prompt("Новый email:", oldEmail);
+            if (!newName || !newEmail) return;
+            try {
+                const docRef = doc(db, "requests", id);
+                await updateDoc(docRef, {
+                    name: newName,
+                    email: newEmail
+                });
+            } catch (e) {
+                console.error("Ошибка обновления:", e);
             }
         };
 
@@ -93,15 +117,26 @@
                 const data = doc.data();
                 const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : '...';
                
-                feed.innerHTML += `
-                    <div class="post">
-                        <span class="time">${date}</span>
-                        <b>${data.name}</b>
-                        <p style="margin: 5px 0;">${data.email}</p>
-                        <button class="like-btn" onclick="processLike('${doc.id}')">
-                            👍 ${data.likes || 0}
-                        </button>
-                    </div>
+            feed.innerHTML += `
+                <div class="post">
+                    <span class="time">${date}</span>
+                    <b>${data.name}</b>
+                    <p style="margin: 5px 0;">${data.email}</p>
+            
+                    <button class="like-btn" onclick="processLike('${doc.id}')">
+                        👍 ${data.likes || 0}
+                    </button>
+            
+                    <button onclick="editPost('${doc.id}', '${data.name}', '${data.email}')" 
+                    style="margin-left:10px; background:#ffc107; border:none; padding:5px 10px; border-radius:6px; cursor:pointer;">
+                        Изменить
+                    </button>
+            
+                    <button onclick="deletePost('${doc.id}')" 
+                    style="margin-left:10px; background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer;">
+                        Удалить
+                    </button>
+                </div>
                 `;
             });
         });
