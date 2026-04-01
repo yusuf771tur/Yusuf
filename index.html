@@ -5,7 +5,7 @@
     <title>BaaS</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
         button#mainBtn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.3s; }
         button#mainBtn:hover { background: #0056b3; }
@@ -14,64 +14,26 @@
         .like-btn { cursor: pointer; border: none; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; font-size: 14px; transition: 0.2s; }
         .like-btn:hover { background: #e2e6ea; }
         .time { font-size: 11px; color: #999; float: right; }
+        .auth-bar { display: flex; align-items: center; gap: 15px; justify-content: center; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #007bff; }
     </style>
 </head>
 <body>
-<div id="authSection" class="container" style="text-align: center;">
-    <button id="loginBtn">Войти через Google</button>
-    <div id="userInfo" style="display: none; align-items: center; gap: 15px; margin-bottom: 20px;">
-        <img id="userPhoto" src="" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
-        <span id="userName" style="font-weight: bold;"></span>
-        <button id="logoutBtn" class="logout-btn" style="background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">Выйти</button>
+
+    <div id="authSection" class="container" style="text-align: center;">
+        <button id="loginBtn">Войти через Google</button>
+        <div id="userInfo" class="auth-bar" style="display: none;">
+            <img id="userPhoto" class="user-avatar" src="" alt="Avatar">
+            <span id="userName" style="font-weight: bold;"></span>
+            <button id="logoutBtn" style="background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">Выйти</button>
+        </div>
     </div>
-</div>
 
-<hr> ```
-
----
-
-### 3. Логика авторизации (JavaScript)
-Это самая важная часть. Она скрывает форму, если пользователь не вошел, и заполняет данные (имя/email) автоматически.
-
-**Куда вставлять:** Внутри тега `<script type="module">`, сразу после строки `const db = getFirestore(app);` (ориентировочно **66-68 строка**).
-
-```javascript
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const userInfo = document.getElementById('userInfo');
-const messageForm = document.querySelector('.container:nth-of-type(2)'); // Твоя форма управления данными
-
-loginBtn.onclick = () => signInWithPopup(auth, provider);
-logoutBtn.onclick = () => signOut(auth);
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        // Пользователь вошел
-        loginBtn.style.display = 'none';
-        userInfo.style.display = 'flex';
-        messageForm.style.display = 'block';
-
-        document.getElementById('userName').innerText = user.displayName;
-        document.getElementById('userPhoto').src = user.photoURL;
-        
-        // Автоматически подставляем данные в твои инпуты
-        document.getElementById('name').value = user.displayName;
-        document.getElementById('email').value = user.email;
-    } else {
-        // Пользователь не авторизован
-        loginBtn.style.display = 'block';
-        userInfo.style.display = 'none';
-        messageForm.style.display = 'none';
-    }
-});
-    
-    <div class="container">
+    <div id="messageForm" class="container" style="display: none;">
         <h3>Панель управления данными</h3>
-        <input type="text" id="name" placeholder="Имя профиля">
-        <input type="email" id="email" placeholder="Рабочий Email">
+        <input type="text" id="name" placeholder="Имя профиля" readonly>
+        <input type="email" id="email" placeholder="Рабочий Email" readonly>
+        <input type="text" id="content" placeholder="Что у вас нового?">
         <button id="mainBtn">Опубликовать в облако</button>
     </div>
 
@@ -80,150 +42,102 @@ onAuthStateChanged(auth, (user) => {
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-       import {
-                getFirestore, collection, addDoc, query, orderBy, onSnapshot,
-                serverTimestamp, updateDoc, doc, increment, deleteDoc
-                } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-        
-        // КОНФИГУРАЦИЯ
-            const firebaseConfig = {
-              apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
-              authDomain: "yusuf-5c586.firebaseapp.com",
-              projectId: "yusuf-5c586",
-              storageBucket: "yusuf-5c586.firebasestorage.app",
-              messagingSenderId: "772209549280",
-              appId: "1:772209549280:web:003704162681f805e15585",
-              measurementId: "G-QLK34HJGCE"
-            };
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
+            authDomain: "yusuf-5c586.firebaseapp.com",
+            projectId: "yusuf-5c586",
+            storageBucket: "yusuf-5c586.firebasestorage.app",
+            messagingSenderId: "772209549280",
+            appId: "1:772209549280:web:003704162681f805e15585",
+            measurementId: "G-QLK34HJGCE"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // МЕТОД: АТОМАРНОЕ ОБНОВЛЕНИЕ (LIKES)
-        window.processLike = async (id) => {
-            const docRef = doc(db, "requests", id);
-            try {
-                await updateDoc(docRef, { likes: increment(1) });
-            } catch (e) {
-                console.error("Validation Error:", e.message);
+        // ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        const messageForm = document.getElementById('messageForm');
+
+        // ЛОГИКА ВХОДА/ВЫХОДА
+        loginBtn.onclick = () => signInWithPopup(auth, provider);
+        logoutBtn.onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginBtn.style.display = 'none';
+                userInfo.style.display = 'flex';
+                messageForm.style.display = 'block';
+                document.getElementById('userName').innerText = user.displayName;
+                document.getElementById('userPhoto').src = user.photoURL;
+                document.getElementById('name').value = user.displayName;
+                document.getElementById('email').value = user.email;
+            } else {
+                loginBtn.style.display = 'block';
+                userInfo.style.display = 'none';
+                messageForm.style.display = 'none';
             }
+        });
+
+        // ФУНКЦИИ ДЛЯ ПОСТОВ (ГЛОБАЛЬНЫЕ)
+        window.processLike = async (id) => {
+            await updateDoc(doc(db, "requests", id), { likes: increment(1) });
+        };
+
+        window.react = async (id, type) => {
+            await updateDoc(doc(db, "requests", id), { [`reactions.${type}`]: increment(1) });
         };
 
         window.deletePost = async (id) => {
-            if (!confirm("Удалить запись?")) return;
-            try {
-                await deleteDoc(doc(db, "requests", id));
-            } catch (e) {
-                console.error("Ошибка удаления:", e);
-            }
+            if (confirm("Удалить запись?")) await deleteDoc(doc(db, "requests", id));
         };
 
         window.editPost = async (id, oldName, oldEmail) => {
             const newName = prompt("Новое имя:", oldName);
-            const newEmail = prompt("Новый email:", oldEmail);
-            if (!newName || !newEmail) return;
-            try {
-                const docRef = doc(db, "requests", id);
-                await updateDoc(docRef, {
-                    name: newName,
-                    email: newEmail
-                });
-            } catch (e) {
-                console.error("Ошибка обновления:", e);
-            }
+            if (newName) await updateDoc(doc(db, "requests", id), { name: newName });
         };
 
-        window.react = async (id, type) => {
-    const docRef = doc(db, "requests", id);
-            try {
-                await updateDoc(docRef, {
-                    [`reactions.${type}`]: increment(1)
-                });
-            } catch (e) {
-                console.error("Reaction error:", e);
-            }
-        };
-
-        // МЕТОД: ЗАПИСЬ С ВАЛИДАЦИЕЙ
+        // ДОБАВЛЕНИЕ ЗАПИСИ
         document.getElementById('mainBtn').onclick = async () => {
-            const btn = document.getElementById('mainBtn');
-            const nameInput = document.getElementById('name');
-            const emailInput = document.getElementById('email');
+            const content = document.getElementById('content').value;
+            if (!content) return alert("Введите текст сообщения!");
 
-            btn.disabled = true;
-            try {
-                await addDoc(collection(db, "requests"), {
-                    name: nameInput.value,
-                    email: emailInput.value,
-                    likes: 0,
-                    dislikes: 0,
-                    reactions: {
-                        like: 0,
-                        dislike: 0,
-                        fire: 0,
-                        laugh: 0
-                    },
-                
-                    timestamp: serverTimestamp()
-                });
-               
-                // Очистка полей после успеха
-                nameInput.value = "";
-                emailInput.value = "";
-            } catch (e) {
-                alert("Ошибка безопасности: Данные отклонены сервером.");
-                console.error(e);
-            }
-            btn.disabled = false;
+            await addDoc(collection(db, "requests"), {
+                name: auth.currentUser.displayName,
+                email: auth.currentUser.email,
+                text: content,
+                likes: 0,
+                reactions: { like: 0, dislike: 0, fire: 0, laugh: 0 },
+                timestamp: serverTimestamp()
+            });
+            document.getElementById('content').value = "";
         };
 
-        // МЕТОД: REAL-TIME СИНХРОНИЗАЦИЯ
+        // ЧТЕНИЕ ДАННЫХ
         const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
         onSnapshot(q, (snapshot) => {
             const feed = document.getElementById('feed');
             feed.innerHTML = "";
-           
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : '...';
-               
-            feed.innerHTML += `
-                <div class="post">
-                    <span class="time">${date}</span>
-                    <b>${data.name}</b>
-                    <p style="margin: 5px 0;">${data.email}</p>
-            
-                   <div style="display:flex; gap:5px; flex-wrap:wrap;">
-
-                    <button class="like-btn" onclick="react('${doc.id}', 'like')">
-                    👍 ${data.reactions?.like || 0}
-                    </button>
-                    
-                    <button class="like-btn" onclick="react('${doc.id}', 'dislike')">
-                    👎 ${data.reactions?.dislike || 0}
-                    </button>
-                    
-                    <button class="like-btn" onclick="react('${doc.id}', 'fire')">
-                    🔥 ${data.reactions?.fire || 0}
-                    </button>
-                    
-                    <button class="like-btn" onclick="react('${doc.id}', 'laugh')">
-                    😂 ${data.reactions?.laugh || 0}
-                    </button>
-                    
-                    </div>
-            
-                    <button onclick="editPost('${doc.id}', '${data.name}', '${data.email}')" 
-                    style="margin-left:10px; background:#ffc107; border:none; padding:5px 10px; border-radius:6px; cursor:pointer;">
-                        Изменить
-                    </button>
-            
-                    <button onclick="deletePost('${doc.id}')" 
-                    style="margin-left:10px; background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:6px; cursor:pointer;">
-                        Удалить
-                    </button>
-                </div>
-                `;
+                feed.innerHTML += `
+                    <div class="post">
+                        <span class="time">${date}</span>
+                        <b>${data.name}</b>
+                        <p>${data.text || data.email}</p>
+                        <div style="display:flex; gap:5px;">
+                            <button class="like-btn" onclick="react('${doc.id}', 'like')">👍 ${data.reactions?.like || 0}</button>
+                            <button class="like-btn" onclick="react('${doc.id}', 'fire')">🔥 ${data.reactions?.fire || 0}</button>
+                            <button class="like-btn" onclick="deletePost('${doc.id}')" style="background:#ff4757; color:white;">Удалить</button>
+                        </div>
+                    </div>`;
             });
         });
     </script>
