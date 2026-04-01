@@ -17,7 +17,57 @@
     </style>
 </head>
 <body>
+<div id="authSection" class="container" style="text-align: center;">
+    <button id="loginBtn">Войти через Google</button>
+    <div id="userInfo" style="display: none; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <img id="userPhoto" src="" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+        <span id="userName" style="font-weight: bold;"></span>
+        <button id="logoutBtn" class="logout-btn" style="background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">Выйти</button>
+    </div>
+</div>
 
+<hr> ```
+
+---
+
+### 3. Логика авторизации (JavaScript)
+Это самая важная часть. Она скрывает форму, если пользователь не вошел, и заполняет данные (имя/email) автоматически.
+
+**Куда вставлять:** Внутри тега `<script type="module">`, сразу после строки `const db = getFirestore(app);` (ориентировочно **66-68 строка**).
+
+```javascript
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const userInfo = document.getElementById('userInfo');
+const messageForm = document.querySelector('.container:nth-of-type(2)'); // Твоя форма управления данными
+
+loginBtn.onclick = () => signInWithPopup(auth, provider);
+logoutBtn.onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Пользователь вошел
+        loginBtn.style.display = 'none';
+        userInfo.style.display = 'flex';
+        messageForm.style.display = 'block';
+
+        document.getElementById('userName').innerText = user.displayName;
+        document.getElementById('userPhoto').src = user.photoURL;
+        
+        // Автоматически подставляем данные в твои инпуты
+        document.getElementById('name').value = user.displayName;
+        document.getElementById('email').value = user.email;
+    } else {
+        // Пользователь не авторизован
+        loginBtn.style.display = 'block';
+        userInfo.style.display = 'none';
+        messageForm.style.display = 'none';
+    }
+});
+    
     <div class="container">
         <h3>Панель управления данными</h3>
         <input type="text" id="name" placeholder="Имя профиля">
@@ -29,6 +79,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
        import {
                 getFirestore, collection, addDoc, query, orderBy, onSnapshot,
                 serverTimestamp, updateDoc, doc, increment, deleteDoc
