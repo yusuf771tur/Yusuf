@@ -3,50 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BaaS App</title>
+    <title>Cloud App — Панель управления</title>
     <style>
-        /* Общие стили */
-        body { font-family: 'Inter', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         
-        /* Стили авторизации */
-        .auth-bar { display: flex; align-items: center; gap: 15px; justify-content: center; }
-        .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #007bff; }
-        #loginBtn { background: white; color: #444; border: 1px solid #ddd; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; }
-        #loginBtn:hover { background: #f1f1f1; }
-        #logoutBtn { background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        /* Контейнеры */
+        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; }
+        
+        /* Авторизация */
+        .auth-card { text-align: center; }
+        #loginBtn { background: white; color: #444; border: 1px solid #dadce0; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; transition: 0.2s; display: inline-flex; align-items: center; gap: 10px; }
+        #loginBtn:hover { background: #f8f9fa; border-color: #d2e3fc; }
+        
+        .user-info { display: none; align-items: center; justify-content: space-between; width: 100%; }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #007bff; }
+        #logoutBtn { background: #fee2e2; color: #dc2626; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
 
-        /* Поля ввода */
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        button#mainBtn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        /* Форма */
+        h3 { margin-top: 0; color: #1a1a1a; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e0e0e0; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; }
+        input:focus { border-color: #007bff; }
+        input[readonly] { background: #f8f9fa; color: #666; cursor: not-allowed; }
         
+        #mainBtn { background: #007bff; color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        #mainBtn:hover { background: #0056b3; }
+
         /* Посты */
-        .post { background: #fff; border: 1px solid #eaeaea; padding: 15px; margin-top: 15px; border-radius: 8px; width: 100%; max-width: 500px; }
-        .time { font-size: 11px; color: #999; float: right; }
-        .like-btn { cursor: pointer; border: none; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; font-size: 14px; margin-top: 10px; }
+        .post { background: white; border: 1px solid #f0f0f0; padding: 20px; margin-top: 15px; border-radius: 12px; width: 100%; max-width: 500px; box-sizing: border-box; position: relative; }
+        .post b { color: #1a1a1a; font-size: 15px; }
+        .post p { color: #4b5563; line-height: 1.5; margin: 10px 0; }
+        .time { font-size: 12px; color: #9ca3af; position: absolute; top: 20px; right: 20px; }
+        
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
+        .like-btn { cursor: pointer; border: 1px solid #f0f0f0; background: #fff; padding: 6px 14px; border-radius: 20px; font-size: 14px; transition: 0.2s; }
+        .like-btn:hover { background: #f8f9fa; transform: translateY(-1px); }
+        .del-btn { margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; font-weight: 500; }
     </style>
 </head>
 <body>
 
-    <div id="authSection" class="container">
-        <div id="loggedOutUI" style="text-align: center;">
-            <button id="loginBtn">🔵 Войти через Google</button>
+    <div class="container auth-card">
+        <div id="loggedOutUI">
+            <button id="loginBtn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_static_assets/google_signin_buttons/google_favicon.svg" width="18">
+                Войти через Google
+            </button>
         </div>
         
-        <div id="userInfo" class="auth-bar" style="display: none;">
-            <img id="userPhoto" class="user-avatar" src="" alt="Avatar">
-            <div>
-                <div id="userName" style="font-weight: bold;"></div>
-                <button id="logoutBtn">Выйти</button>
+        <div id="userInfo" class="user-info">
+            <div class="user-profile">
+                <img id="userPhoto" class="user-avatar" src="" alt="Avatar">
+                <span id="userName" style="font-weight: 700;"></span>
             </div>
+            <button id="logoutBtn">Выйти</button>
         </div>
     </div>
 
     <div id="messageForm" class="container" style="display: none;">
-        <h3 style="margin-top: 0;">Новая запись</h3>
-        <input type="text" id="name" placeholder="Имя" readonly style="background: #f9f9f9;">
-        <input type="email" id="email" placeholder="Email" readonly style="background: #f9f9f9;">
-        <input type="text" id="content" placeholder="Что нового?">
+        <h3>Создать новую запись</h3>
+        <input type="text" id="name" placeholder="Имя профиля" readonly>
+        <input type="email" id="email" placeholder="Email" readonly>
+        <input type="text" id="content" placeholder="Напишите что-нибудь интересное...">
         <button id="mainBtn">Опубликовать в облако</button>
     </div>
 
@@ -57,6 +75,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+        // ТВОЯ КОНФИГУРАЦИЯ (Данные сохранены)
         const firebaseConfig = {
             apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
             authDomain: "yusuf-5c586.firebaseapp.com",
@@ -71,6 +90,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
 
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -78,11 +98,10 @@
         const userInfo = document.getElementById('userInfo');
         const messageForm = document.getElementById('messageForm');
 
-        // Логика кнопок
-        loginBtn.onclick = () => signInWithPopup(auth, provider).catch(err => console.error(err));
+        // ЛОГИКА АВТОРИЗАЦИИ
+        loginBtn.onclick = () => signInWithPopup(auth, provider).catch(e => alert("Ошибка: Разрешите всплывающие окна!"));
         logoutBtn.onclick = () => signOut(auth);
 
-        // Слушатель состояния входа
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 loggedOutUI.style.display = 'none';
@@ -99,48 +118,66 @@
             }
         });
 
-        // Глобальные функции для кнопок в ленте
+        // ФУНКЦИИ ВЗАИМОДЕЙСТВИЯ (Глобальные)
         window.react = async (id, type) => {
-            await updateDoc(doc(db, "requests", id), { [`reactions.${type}`]: increment(1) });
-        };
-        window.deletePost = async (id) => {
-            if (confirm("Удалить?")) await deleteDoc(doc(db, "requests", id));
+            try {
+                const docRef = doc(db, "requests", id);
+                await updateDoc(docRef, { [`reactions.${type}`]: increment(1) });
+            } catch (e) { console.error(e); }
         };
 
-        // Публикация
+        window.deletePost = async (id) => {
+            if (confirm("Удалить этот пост?")) {
+                await deleteDoc(doc(db, "requests", id));
+            }
+        };
+
+        // ОТПРАВКА ДАННЫХ
         document.getElementById('mainBtn').onclick = async () => {
             const content = document.getElementById('content').value;
-            if (!content) return alert("Напишите что-нибудь!");
-            
-            await addDoc(collection(db, "requests"), {
-                name: auth.currentUser.displayName,
-                email: auth.currentUser.email,
-                text: content,
-                reactions: { like: 0, fire: 0 },
-                timestamp: serverTimestamp()
-            });
-            document.getElementById('content').value = "";
+            if (!content) return alert("Поле не может быть пустым!");
+
+            const btn = document.getElementById('mainBtn');
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "requests"), {
+                    name: auth.currentUser.displayName,
+                    email: auth.currentUser.email,
+                    text: content,
+                    reactions: { like: 0, dislike: 0, fire: 0, laugh: 0 },
+                    likes: 0,
+                    timestamp: serverTimestamp()
+                });
+                document.getElementById('content').value = "";
+            } catch (e) {
+                alert("Ошибка доступа! Проверьте правила (Rules) в Firebase.");
+            }
+            btn.disabled = false;
         };
 
-        // Лента в реальном времени
+        // ЛЕНТА В РЕАЛЬНОМ ВРЕМЕНИ
         const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
         onSnapshot(q, (snapshot) => {
             const feed = document.getElementById('feed');
             feed.innerHTML = "";
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : '...';
+                const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Только что';
+                
                 feed.innerHTML += `
                     <div class="post">
                         <span class="time">${date}</span>
                         <b>${data.name}</b>
-                        <p style="margin: 10px 0;">${data.text}</p>
-                        <div style="display:flex; gap:10px;">
+                        <p>${data.text || 'Нет текста'}</p>
+                        <div class="actions">
                             <button class="like-btn" onclick="react('${doc.id}', 'like')">👍 ${data.reactions?.like || 0}</button>
                             <button class="like-btn" onclick="react('${doc.id}', 'fire')">🔥 ${data.reactions?.fire || 0}</button>
-                            <button class="like-btn" onclick="deletePost('${doc.id}')" style="background:#fff1f1; color:red; margin-left:auto;">🗑</button>
+                            <button class="like-btn" onclick="react('${doc.id}', 'laugh')">😂 ${data.reactions?.laugh || 0}</button>
+                            <button class="del-btn" onclick="deletePost('${doc.id}')">Удалить</button>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
         });
     </script>
