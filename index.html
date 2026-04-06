@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cloud App — Личный мессенджер</title>
+
 <style>
 body {
   font-family: 'Inter', sans-serif;
@@ -14,6 +15,7 @@ body {
   padding: 20px;
   margin: 0;
 }
+
 .container {
   width: 100%;
   max-width: 500px;
@@ -24,7 +26,9 @@ body {
   margin-bottom: 20px;
   box-sizing: border-box;
 }
+
 .auth-card { text-align: center; }
+
 #loginBtn {
   background: white;
   color: #444;
@@ -35,23 +39,27 @@ body {
   font-weight: 600;
   font-size: 16px;
 }
+
 .user-info {
   display: none;
   align-items: center;
   justify-content: space-between;
   width: 100%;
 }
+
 .user-profile {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 .user-avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;
   border: 2px solid #007bff;
 }
+
 input {
   width: 100%;
   padding: 12px;
@@ -60,6 +68,7 @@ input {
   border-radius: 8px;
   font-size: 14px;
 }
+
 #mainBtn {
   background: #007bff;
   color: white;
@@ -70,6 +79,7 @@ input {
   font-weight: 600;
   cursor: pointer;
 }
+
 .post {
   background: white;
   border: 1px solid #f0f0f0;
@@ -78,6 +88,7 @@ input {
   border-radius: 12px;
   position: relative;
 }
+
 .post img {
   width: 100%;
   border-radius: 8px;
@@ -85,6 +96,7 @@ input {
   max-height: 400px;
   object-fit: cover;
 }
+
 .time {
   font-size: 12px;
   color: #9ca3af;
@@ -92,11 +104,13 @@ input {
   top: 20px;
   right: 20px;
 }
+
 .actions {
   display: flex;
   gap: 8px;
   margin-top: 15px;
 }
+
 button.react-btn {
   cursor: pointer;
   padding: 6px 14px;
@@ -104,6 +118,7 @@ button.react-btn {
   border: 1px solid #eee;
   background: white;
 }
+
 .del-btn {
   margin-left: auto;
   background: none;
@@ -111,6 +126,29 @@ button.react-btn {
   color: red;
   cursor: pointer;
 }
+
+/* ACCOUNTS */
+#accountBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.accountChip {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+.accountChip.active {
+  background: #007bff;
+  color: white;
+}
+
+/* CHAT */
 #chatMessages {
   height: 250px;
   overflow-y: auto;
@@ -119,6 +157,7 @@ button.react-btn {
   border-radius: 8px;
   margin-bottom: 10px;
 }
+
 #sendChatBtn {
   width: 100%;
   padding: 12px;
@@ -130,10 +169,12 @@ button.react-btn {
   cursor: pointer;
   transition: 0.2s;
 }
+
 #sendChatBtn:hover {
   transform: scale(1.02);
   opacity: 0.9;
 }
+
 #chatInput {
   width: 100%;
   padding: 12px;
@@ -144,18 +185,25 @@ button.react-btn {
 }
 </style>
 </head>
+
 <body>
 
-<div class="container auth-card">
-  <button id="loginBtn">Войти через Google</button>
+<div class="container">
+  <div id="accountBar"></div>
 </div>
 
-<div id="userInfo" class="container user-info">
-  <div class="user-profile">
-    <img id="userPhoto" class="user-avatar">
-    <span id="userName"></span>
+<div class="container auth-card">
+  <div id="loggedOutUI">
+    <button id="loginBtn">Войти через Google</button>
   </div>
-  <button id="logoutBtn">Выйти</button>
+
+  <div id="userInfo" class="user-info">
+    <div class="user-profile">
+      <img id="userPhoto" class="user-avatar">
+      <span id="userName"></span>
+    </div>
+    <button id="logoutBtn">Выйти</button>
+  </div>
 </div>
 
 <div id="messageForm" class="container" style="display:none;">
@@ -168,7 +216,7 @@ button.react-btn {
 
 <div id="chatBox" class="container" style="display:none;">
   <h3>Личный чат</h3>
-  <select id="chatUserSelect">
+  <select id="chatSelect">
     <option value="">Выберите собеседника</option>
   </select>
   <div id="chatMessages"></div>
@@ -180,143 +228,209 @@ button.react-btn {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+  updateDoc,
+  doc,
+  increment
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
   authDomain: "yusuf-5c586.firebaseapp.com",
   projectId: "yusuf-5c586",
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
 
-let currentUser = null;
-let allUsers = [];
+/* ACCOUNTS */
+let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+let currentAccount = null;
+let currentChatUser = null;
 
-// ===== LOGIN =====
-document.getElementById("loginBtn").onclick = async () => {
-  const result = await signInWithPopup(auth, provider);
-  currentUser = result.user;
-  showUserInfo();
-  loadAllUsers();
-};
-
-document.getElementById("logoutBtn").onclick = async () => {
-  await signOut(auth);
-  location.reload();
-};
-
-function showUserInfo() {
-  document.getElementById("userInfo").style.display = "flex";
-  document.getElementById("messageForm").style.display = "block";
-  document.getElementById("chatBox").style.display = "block";
-  document.getElementById("userPhoto").src = currentUser.photoURL;
-  document.getElementById("userName").innerText = currentUser.displayName;
-  document.getElementById("nameInput").value = currentUser.displayName;
-}
-
-// ===== USERS (для выбора собеседника) =====
-async function loadAllUsers() {
-  const usersSnap = await onSnapshot(collection(db, "users"), (snap) => {
-    allUsers = [];
-    const select = document.getElementById("chatUserSelect");
-    select.innerHTML = '<option value="">Выберите собеседника</option>';
-    snap.forEach(d => {
-      const u = d.data();
-      if (u.uid !== currentUser.uid) {
-        allUsers.push(u);
-        const opt = document.createElement("option");
-        opt.value = u.uid;
-        opt.textContent = u.name;
-        select.appendChild(opt);
-      }
-    });
-  });
-}
-
-// ===== POSTS =====
-document.getElementById("mainBtn").onclick = async () => {
-  await addDoc(collection(db, "requests"), {
-    name: currentUser.displayName,
-    text: document.getElementById("contentInput").value,
-    imageUrl: document.getElementById("imageUrlInput").value,
-    reactions: { like: 0, fire: 0, laugh: 0 },
-    timestamp: serverTimestamp()
-  });
-  document.getElementById("contentInput").value = "";
-  document.getElementById("imageUrlInput").value = "";
-};
-
-// ===== FEED =====
-const feedQuery = query(collection(db, "requests"), orderBy("timestamp", "desc"));
-onSnapshot(feedQuery, snap => {
-  const feed = document.getElementById("feed");
-  feed.innerHTML = "";
-  snap.forEach(d => {
-    const data = d.data();
-    const id = d.id;
-    feed.innerHTML += `
-    <div class="post">
-      <span class="time">${data.timestamp?.toDate().toLocaleString() || ""}</span>
-      <b>${data.name}</b>
-      <p>${data.text || ""}</p>
-      ${data.imageUrl ? `<img src="${data.imageUrl}">` : ""}
-      <div class="actions">
-        <button class="react-btn" onclick="react('${id}','like')">👍 ${data.reactions?.like || 0}</button>
-        <button class="react-btn" onclick="react('${id}','fire')">🔥 ${data.reactions?.fire || 0}</button>
-        <button class="react-btn" onclick="react('${id}','laugh')">😂 ${data.reactions?.laugh || 0}</button>
-      </div>
-    </div>`;
-  });
-});
-
-// ===== REACTIONS =====
-window.react = async (id, type) => {
-  const postRef = doc(db, "requests", id);
-  await updateDoc(postRef, { [`reactions.${type}`]: increment(1) });
-};
-
-// ===== PRIVATE CHAT =====
+/* UTILS */
 function getChatId(uid1, uid2) {
   return [uid1, uid2].sort().join("_");
 }
 
-let currentChatUser = null;
-document.getElementById("chatUserSelect").onchange = (e) => {
-  currentChatUser = e.target.value;
-  if (currentChatUser) listenPrivateChat(currentChatUser);
+function renderAccounts() {
+  const bar = document.getElementById("accountBar");
+  bar.innerHTML = "";
+  accounts.forEach(acc => {
+    const el = document.createElement("div");
+    el.className = "accountChip " + (acc.uid === currentAccount ? "active" : "");
+    el.innerText = acc.name;
+    el.onclick = () => switchAccount(acc.uid);
+    bar.appendChild(el);
+  });
+}
+
+function saveAccount(user) {
+  if (!accounts.find(a => a.uid === user.uid)) {
+    accounts.push({
+      uid: user.uid,
+      name: user.displayName,
+      photo: user.photoURL
+    });
+    localStorage.setItem("accounts", JSON.stringify(accounts));
+  }
+  renderAccounts();
+}
+
+function switchAccount(uid) {
+  const acc = accounts.find(a => a.uid === uid);
+  if (!acc) return;
+  currentAccount = uid;
+
+  document.getElementById("userName").innerText = acc.name;
+  document.getElementById("userPhoto").src = acc.photo;
+  document.getElementById("userInfo").style.display = "flex";
+  document.getElementById("messageForm").style.display = "block";
+  document.getElementById("chatBox").style.display = "block";
+  document.getElementById("nameInput").value = acc.name;
+
+  populateChatSelect();
+  renderAccounts();
+}
+
+/* AUTH */
+document.getElementById("loginBtn").onclick = async () => {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" }); // 🔹 спрашивать аккаунт каждый раз
+  try {
+    const result = await signInWithPopup(auth, provider);
+    saveAccount(result.user);
+    switchAccount(result.user.uid);
+  } catch (err) {
+    console.error(err);
+  }
 };
 
-function listenPrivateChat(withUid) {
-  const chatId = getChatId(currentUser.uid, withUid);
+document.getElementById("logoutBtn").onclick = async () => {
+  await signOut(auth);
+  currentAccount = null;
+  document.getElementById("userInfo").style.display = "none";
+  document.getElementById("messageForm").style.display = "none";
+  document.getElementById("chatBox").style.display = "none";
+};
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    saveAccount(user);
+  }
+});
+
+/* POSTS */
+document.getElementById("mainBtn").onclick = async () => {
+  const text = document.getElementById("contentInput").value;
+  const imageUrl = document.getElementById("imageUrlInput").value;
+  const name = accounts.find(a => a.uid === currentAccount).name;
+
+  await addDoc(collection(db, "requests"), {
+    name, text, imageUrl,
+    reactions: { like: 0, fire: 0, laugh: 0 },
+    timestamp: serverTimestamp()
+  });
+
+  document.getElementById("contentInput").value = "";
+  document.getElementById("imageUrlInput").value = "";
+};
+
+/* FEED */
+const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
+onSnapshot(q, snap => {
+  const feed = document.getElementById("feed");
+  feed.innerHTML = "";
+  snap.forEach(d => {
+    const data = d.data();
+    feed.innerHTML += `
+      <div class="post">
+        <span class="time">${data.timestamp?.toDate().toLocaleString() || ""}</span>
+        <b>${data.name}</b>
+        <p>${data.text || ""}</p>
+        ${data.imageUrl ? `<img src="${data.imageUrl}">` : ""}
+        <div class="actions">
+          <button class="react-btn" onclick="react('${d.id}','like')">👍 ${data.reactions?.like || 0}</button>
+          <button class="react-btn" onclick="react('${d.id}','fire')">🔥 ${data.reactions?.fire || 0}</button>
+          <button class="react-btn" onclick="react('${d.id}','laugh')">😂 ${data.reactions?.laugh || 0}</button>
+        </div>
+      </div>`;
+  });
+});
+
+/* REACTIONS */
+window.react = async (id, type) => {
+  const docRef = doc(db, "requests", id);
+  await updateDoc(docRef, { [`reactions.${type}`]: increment(1) });
+};
+
+/* CHAT */
+function populateChatSelect() {
+  const select = document.getElementById("chatSelect");
+  select.innerHTML = `<option value="">Выберите собеседника</option>`;
+  accounts.forEach(a => {
+    if (a.uid !== currentAccount) {
+      const opt = document.createElement("option");
+      opt.value = a.uid;
+      opt.text = a.name;
+      select.appendChild(opt);
+    }
+  });
+}
+
+document.getElementById("chatSelect").onchange = () => {
+  currentChatUser = document.getElementById("chatSelect").value;
+  listenPrivateChat(currentChatUser);
+};
+
+function listenPrivateChat(toUid) {
+  if (!toUid) return;
+  const chatId = getChatId(currentAccount, toUid);
   const messagesRef = collection(db, "conversations", chatId, "messages");
-  onSnapshot(query(messagesRef, orderBy("timestamp")), snap => {
+  const q = query(messagesRef, orderBy("timestamp"));
+  onSnapshot(q, snap => {
     const box = document.getElementById("chatMessages");
     box.innerHTML = "";
     snap.forEach(d => {
       const data = d.data();
-      const isMe = data.from === currentUser.uid;
-      box.innerHTML += `<div><b>${isMe ? "Ты" : "Он"}:</b> ${data.text}</div>`;
+      const isMe = data.from === currentAccount;
+      box.innerHTML += `<div><b>${isMe ? "Ты" : data.name}:</b> ${data.text}</div>`;
     });
   });
 }
 
 document.getElementById("sendChatBtn").onclick = async () => {
-  if (!currentChatUser) return alert("Выберите собеседника!");
   const text = document.getElementById("chatInput").value;
-  if (!text) return;
-  const chatId = getChatId(currentUser.uid, currentChatUser);
+  if (!text || !currentChatUser) return;
+  const chatId = getChatId(currentAccount, currentChatUser);
   await addDoc(collection(db, "conversations", chatId, "messages"), {
-    from: currentUser.uid,
+    from: currentAccount,
     to: currentChatUser,
+    name: accounts.find(a => a.uid === currentAccount).name,
     text,
     timestamp: serverTimestamp()
   });
   document.getElementById("chatInput").value = "";
 };
+
 </script>
+
 </body>
 </html>
