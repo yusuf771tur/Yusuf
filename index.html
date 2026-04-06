@@ -1,35 +1,57 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud App — Панель управления</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; }
-        .auth-card { text-align: center; }
-        #loginBtn { background: white; color: #444; border: 1px solid #dadce0; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; display: inline-flex; align-items: center; gap: 10px; }
-        .user-info { display: none; align-items: center; justify-content: space-between; width: 100%; }
-        .user-profile { display: flex; align-items: center; gap: 12px; }
-        .user-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #007bff; }
-        #logoutBtn { background: #fee2e2; color: #dc2626; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
-        #mainBtn { background: #007bff; color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
-        .post { background: white; border: 1px solid #f0f0f0; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; }
-        .post img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 400px; object-fit: cover; }
-        .time { font-size: 12px; color: #9ca3af; position: absolute; top: 20px; right: 20px; }
-        .actions { display: flex; gap: 8px; margin-top: 15px; }
-        button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; border: 1px solid #eee; background: white; }
-        .del-btn { margin-left: auto; background: none; border: none; color: red; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud App — Панель управления</title>
+
+<style>
+body { font-family: 'Inter', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+
+.container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; }
+
+.auth-card { text-align: center; }
+
+#loginBtn { background: white; color: #444; border: 1px solid #dadce0; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; }
+
+.user-info { display: none; align-items: center; justify-content: space-between; width: 100%; }
+
+.user-profile { display: flex; align-items: center; gap: 12px; }
+
+.user-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #007bff; }
+
+input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e0e0e0; border-radius: 8px; }
+
+#mainBtn { background: #007bff; color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
+
+.post { background: white; border: 1px solid #f0f0f0; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; }
+
+.post img { width: 100%; border-radius: 8px; margin-top: 10px; }
+
+.actions { display: flex; gap: 8px; margin-top: 15px; }
+
+.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; border: 1px solid #eee; background: white; }
+
+.del-btn { margin-left: auto; background: none; border: none; color: red; cursor: pointer; }
+
+/* ===== DM STYLE ===== */
+.dmBox { height: 220px; overflow: auto; border: 1px solid #eee; padding: 10px; background: #fafafa; border-radius: 10px; }
+
+.chatItem { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
+
+.chatItem:hover { background: #f1f1f1; }
+
+</style>
 </head>
+
 <body>
 
+<!-- AUTH -->
 <div class="container auth-card">
     <div id="loggedOutUI">
         <button id="loginBtn">Войти через Google</button>
     </div>
-    
+
     <div id="userInfo" class="user-info">
         <div class="user-profile">
             <img id="userPhoto" class="user-avatar">
@@ -39,25 +61,49 @@
     </div>
 </div>
 
+<!-- POST -->
 <div id="messageForm" class="container" style="display:none;">
     <h3>Создать пост</h3>
     <input type="text" id="nameInput" readonly>
     <input type="text" id="contentInput" placeholder="Текст...">
-    <input type="text" id="imageUrlInput" placeholder="Ссылка на картинку (https://...)">
+    <input type="text" id="imageUrlInput" placeholder="Ссылка">
     <button id="mainBtn">Опубликовать</button>
 </div>
 
-<div id="feed" style="max-width:500px;width:100%;"></div>
+<!-- FEED -->
+<div id="feed" class="container"></div>
+
+<!-- ===== DM ===== -->
+<div class="container">
+<h3>Личные сообщения</h3>
+
+<input id="toUid" placeholder="UID пользователя">
+<button onclick="openChat()">Открыть чат</button>
+
+<div id="chatList"></div>
+
+<div class="dmBox" id="dmBox"></div>
+
+<input id="dmInput" placeholder="Сообщение">
+<button onclick="sendDM()">Отправить</button>
+</div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import {
+getFirestore,
+collection, addDoc, query, orderBy,
+onSnapshot, serverTimestamp,
+updateDoc, doc, increment,
+deleteDoc, getDocs, where
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
-    authDomain: "yusuf-5c586.firebaseapp.com",
-    projectId: "yusuf-5c586",
+apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
+authDomain: "yusuf-5c586.firebaseapp.com",
+projectId: "yusuf-5c586",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -65,82 +111,160 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Привязка к кнопкам
+let currentChatId = null;
+
+/* AUTH */
 document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
 document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, (user) => {
-    document.getElementById('loggedOutUI').style.display = user ? 'none' : 'block';
-    document.getElementById('userInfo').style.display = user ? 'flex' : 'none';
-    document.getElementById('messageForm').style.display = user ? 'block' : 'none';
+document.getElementById('loggedOutUI').style.display = user ? 'none' : 'block';
+document.getElementById('userInfo').style.display = user ? 'flex' : 'none';
+document.getElementById('messageForm').style.display = user ? 'block' : 'none';
 
-    if (user) {
-        document.getElementById('userName').innerText = user.displayName;
-        document.getElementById('userPhoto').src = user.photoURL;
-        document.getElementById('nameInput').value = user.displayName;
-    }
+if(user){
+document.getElementById('userName').innerText = user.displayName;
+document.getElementById('userPhoto').src = user.photoURL;
+document.getElementById('nameInput').value = user.displayName;
+}
 });
 
-// Ключевое исправление: выносим функции в глобальное окно (window)
-window.react = async (id, type) => {
-    const postRef = doc(db, "requests", id);
-    await updateDoc(postRef, {
-        [`reactions.${type}`]: increment(1)
-    });
-};
-
-window.deletePost = async (id) => {
-    if (confirm("Удалить?")) {
-        await deleteDoc(doc(db, "requests", id));
-    }
-};
-
+/* POSTS */
 document.getElementById('mainBtn').onclick = async () => {
-    const content = document.getElementById('contentInput').value;
-    const imageUrl = document.getElementById('imageUrlInput').value;
-
-    if (!content && !imageUrl) return alert("Добавь текст или ссылку!");
-
-    await addDoc(collection(db, "requests"), {
-        name: auth.currentUser.displayName,
-        text: content,
-        imageUrl: imageUrl || null,
-        reactions: { like: 0, fire: 0, laugh: 0 },
-        timestamp: serverTimestamp()
-    });
-
-    // Очистка полей
-    document.getElementById('contentInput').value = "";
-    document.getElementById('imageUrlInput').value = "";
+await addDoc(collection(db,"requests"),{
+name:auth.currentUser.displayName,
+text:document.getElementById('contentInput').value,
+imageUrl:document.getElementById('imageUrlInput').value,
+reactions:{like:0,fire:0,laugh:0},
+timestamp:serverTimestamp()
+});
 };
 
-const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
+const q = query(collection(db,"requests"),orderBy("timestamp","desc"));
 
-onSnapshot(q, (snapshot) => {
-    const feed = document.getElementById('feed');
-    feed.innerHTML = "";
+onSnapshot(q,(snap)=>{
+const feed=document.getElementById('feed');
+feed.innerHTML="";
 
-    snapshot.forEach((docItem) => {
-        const data = docItem.data();
-        const img = data.imageUrl ? `<img src="${data.imageUrl}">` : "";
-        const timeStr = data.timestamp ? data.timestamp.toDate().toLocaleString() : "...";
+snap.forEach(d=>{
+const data=d.data();
 
-        feed.innerHTML += `
-            <div class="post">
-                <span class="time">${timeStr}</span>
-                <b>${data.name}</b>
-                <p>${data.text || ''}</p>
-                ${img}
-                <div class="actions">
-                    <button class="react-btn" onclick="react('${docItem.id}','like')">👍 ${data.reactions?.like || 0}</button>
-                    <button class="react-btn" onclick="react('${docItem.id}','fire')">🔥 ${data.reactions?.fire || 0}</button>
-                    <button class="react-btn" onclick="react('${docItem.id}','laugh')">😂 ${data.reactions?.laugh || 0}</button>
-                    <button class="del-btn" onclick="deletePost('${docItem.id}')">Удалить</button>
-                </div>
-            </div>
-        `;
-    });
+feed.innerHTML+=`
+<div class="post">
+<b>${data.name}</b>
+<p>${data.text||""}</p>
+${data.imageUrl?`<img src="${data.imageUrl}">`:""}
+</div>`;
 });
+});
+
+/* DELETE + REACTIONS */
+window.react = async (id,type)=>{
+await updateDoc(doc(db,"requests",id),{
+[`reactions.${type}`]:increment(1)
+});
+};
+
+window.deletePost = async (id)=>{
+await deleteDoc(doc(db,"requests",id));
+};
+
+/* ===== DM SYSTEM ===== */
+
+async function getOrCreateChat(uid1,uid2){
+const q=query(collection(db,"conversations"),where("users","array-contains",uid1));
+const snap=await getDocs(q);
+
+let chatId=null;
+
+snap.forEach(d=>{
+if(d.data().users.includes(uid2)) chatId=d.id;
+});
+
+if(chatId) return chatId;
+
+const newChat = await addDoc(collection(db,"conversations"),{
+users:[uid1,uid2]
+});
+
+return newChat.id;
+}
+
+window.openChat = async () => {
+const uid2=document.getElementById("toUid").value;
+const uid1=auth.currentUser.uid;
+
+currentChatId=await getOrCreateChat(uid1,uid2);
+listenMessages(currentChatId);
+loadChats();
+};
+
+window.sendDM = async () => {
+const text=document.getElementById("dmInput").value;
+if(!text||!currentChatId) return;
+
+await addDoc(collection(db,"conversations",currentChatId,"messages"),{
+text,
+senderId:auth.currentUser.uid,
+senderName:auth.currentUser.displayName,
+senderPhoto:auth.currentUser.photoURL,
+read:false,
+timestamp:serverTimestamp()
+});
+
+document.getElementById("dmInput").value="";
+};
+
+/* MESSAGES */
+function listenMessages(chatId){
+const q=query(collection(db,"conversations",chatId,"messages"),orderBy("timestamp","asc"));
+
+onSnapshot(q,(snap)=>{
+const box=document.getElementById("dmBox");
+box.innerHTML="";
+
+snap.forEach(m=>{
+const d=m.data();
+const me=d.senderId===auth.currentUser.uid;
+
+box.innerHTML+=`
+<div style="display:flex;gap:8px;margin:8px 0;">
+<img src="${d.senderPhoto}" style="width:32px;height:32px;border-radius:50%;">
+
+<div style="background:${me?'#dbeafe':'#f3f4f6'};padding:8px;border-radius:10px;max-width:70%;">
+<div>${d.text}</div>
+<div style="font-size:11px;opacity:0.6;">${me?"✔✔":""}</div>
+</div>
+
+</div>`;
+});
+});
+}
+
+/* CHAT LIST */
+function loadChats(){
+const q=query(collection(db,"conversations"),where("users","array-contains",auth.currentUser.uid));
+
+onSnapshot(q,(snap)=>{
+const box=document.getElementById("chatList");
+box.innerHTML="";
+
+snap.forEach(c=>{
+const other=c.data().users.find(u=>u!==auth.currentUser.uid);
+
+box.innerHTML+=`
+<div class="chatItem" onclick="openById('${c.id}')">
+💬 ${other}
+</div>`;
+});
+});
+}
+
+window.openById=(id)=>{
+currentChatId=id;
+listenMessages(id);
+};
+
 </script>
 
 </body>
