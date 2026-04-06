@@ -57,6 +57,15 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
     color: white;
 }
 
+/* ===== CHAT ===== */
+#chatMessages {
+    height: 250px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
 </style>
 </head>
 
@@ -91,6 +100,16 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
     <button id="mainBtn">Опубликовать</button>
 </div>
 
+<!-- CHAT -->
+<div id="chatBox" class="container" style="display:none;">
+    <h3>Чат</h3>
+
+    <div id="chatMessages"></div>
+
+    <input type="text" id="chatInput" placeholder="Сообщение...">
+    <button id="sendChatBtn">Отправить</button>
+</div>
+
 <!-- FEED -->
 <div id="feed" style="max-width:500px;width:100%;"></div>
 
@@ -110,11 +129,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* 🔥 LOGIN FIX */
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
-/* ===== ACCOUNTS SYSTEM ===== */
+/* ===== ACCOUNTS ===== */
 let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
 let currentAccount = null;
 
@@ -126,9 +144,7 @@ function renderAccounts() {
         const el = document.createElement("div");
         el.className = "accountChip " + (acc.uid === currentAccount ? "active" : "");
         el.innerText = acc.name;
-
         el.onclick = () => switchAccount(acc.uid);
-
         bar.appendChild(el);
     });
 }
@@ -156,6 +172,7 @@ function switchAccount(uid) {
 
     document.getElementById("userInfo").style.display = "flex";
     document.getElementById("messageForm").style.display = "block";
+    document.getElementById("chatBox").style.display = "block";
 
     renderAccounts();
 }
@@ -168,7 +185,6 @@ document.getElementById('logoutBtn').onclick =
 () => signOut(auth);
 
 onAuthStateChanged(auth, (user) => {
-
 if (user) {
     saveAccount(user);
     currentAccount = user.uid;
@@ -215,7 +231,6 @@ ${data.imageUrl ? `<img src="${data.imageUrl}">` : ""}
 <button class="react-btn" onclick="react('${d.id}','laugh')">😂 ${data.reactions?.laugh||0}</button>
 <button class="del-btn" onclick="deletePost('${d.id}')">Удалить</button>
 </div>
-
 </div>`;
 });
 });
@@ -229,6 +244,35 @@ await updateDoc(doc(db,"requests",id),{
 
 window.deletePost = async (id)=>{
 await deleteDoc(doc(db,"requests",id));
+};
+
+/* ===== CHAT ===== */
+import { collection as c2, addDoc as add2, onSnapshot as snap2, query as q2, orderBy as o2 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const chatRef = c2(db,"chat");
+const chatQ = q2(chatRef,o2("timestamp"));
+
+onSnapshot(chatQ,(snap)=>{
+const box=document.getElementById("chatMessages");
+box.innerHTML="";
+
+snap.forEach(d=>{
+const data=d.data();
+box.innerHTML += `<div><b>${data.name}:</b> ${data.text}</div>`;
+});
+});
+
+document.getElementById("sendChatBtn").onclick = async ()=>{
+const text=document.getElementById("chatInput").value;
+if(!text) return;
+
+await add2(chatRef,{
+name: accounts.find(a=>a.uid===currentAccount).name,
+text:text,
+timestamp: serverTimestamp()
+});
+
+document.getElementById("chatInput").value="";
 };
 
 </script>
