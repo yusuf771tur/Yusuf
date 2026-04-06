@@ -188,12 +188,10 @@ button.react-btn {
 
 <body>
 
-<!-- ACCOUNTS -->
 <div class="container">
   <div id="accountBar"></div>
 </div>
 
-<!-- AUTH -->
 <div class="container auth-card">
   <div id="loggedOutUI">
     <button id="loginBtn">Войти через Google</button>
@@ -208,7 +206,6 @@ button.react-btn {
   </div>
 </div>
 
-<!-- POST -->
 <div id="messageForm" class="container" style="display:none;">
   <h3>Создать пост</h3>
   <input type="text" id="nameInput" readonly>
@@ -217,7 +214,6 @@ button.react-btn {
   <button id="mainBtn">Опубликовать</button>
 </div>
 
-<!-- CHAT -->
 <div id="chatBox" class="container" style="display:none;">
   <h3>Чат</h3>
   <div id="chatMessages"></div>
@@ -225,7 +221,6 @@ button.react-btn {
   <button id="sendChatBtn">Отправить</button>
 </div>
 
-<!-- FEED -->
 <div id="feed" style="max-width:500px;width:100%;"></div>
 
 <script type="module">
@@ -268,6 +263,12 @@ const provider = new GoogleAuthProvider();
 /* ACCOUNTS */
 let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
 let currentAccount = null;
+let currentChatUser = null;
+
+/* 🔥 ДОБАВИЛ */
+function getChatId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
 
 function renderAccounts() {
   const bar = document.getElementById("accountBar");
@@ -306,6 +307,16 @@ function switchAccount(uid) {
   document.getElementById("userInfo").style.display = "flex";
   document.getElementById("messageForm").style.display = "block";
   document.getElementById("chatBox").style.display = "block";
+
+  /* 🔥 ДОБАВИЛ */
+  const other = accounts.find(a => a.uid !== uid);
+  if (other) {
+    currentChatUser = other.uid;
+    listenPrivateChat(other.uid);
+
+    document.getElementById("sendChatBtn").onclick = () =>
+      sendPrivateMessage(other.uid);
+  }
 
   renderAccounts();
 }
@@ -377,31 +388,45 @@ window.deletePost = async (id) => {
   await deleteDoc(doc(db, "requests", id));
 };
 
-/* CHAT */
-const chatRef = collection(db, "chat");
+/* ===== ЛИЧНЫЙ ЧАТ (ЗАМЕНА) ===== */
 
-onSnapshot(query(chatRef, orderBy("timestamp")), snap => {
-  const box = document.getElementById("chatMessages");
-  box.innerHTML = "";
+function listenPrivateChat(withUid) {
+  const chatId = getChatId(currentAccount, withUid);
+  const messagesRef = collection(db, "chats", chatId, "messages");
 
-  snap.forEach(d => {
-    const data = d.data();
-    box.innerHTML += `<div><b>${data.name}:</b> ${data.text}</div>`;
+  onSnapshot(query(messagesRef, orderBy("timestamp")), snap => {
+    const box = document.getElementById("chatMessages");
+    box.innerHTML = "";
+
+    snap.forEach(d => {
+      const data = d.data();
+      const isMe = data.from === currentAccount;
+
+      box.innerHTML += `
+        <div>
+          <b>${isMe ? "Ты" : "Он"}:</b> ${data.text}
+        </div>
+      `;
+    });
   });
-});
+}
 
-document.getElementById("sendChatBtn").onclick = async () => {
+async function sendPrivateMessage(toUid) {
   const text = document.getElementById("chatInput").value;
   if (!text) return;
 
-  await addDoc(chatRef, {
-    name: accounts.find(a => a.uid === currentAccount).name,
+  const chatId = getChatId(currentAccount, toUid);
+  const messagesRef = collection(db, "chats", chatId, "messages");
+
+  await addDoc(messagesRef, {
+    from: currentAccount,
+    to: toUid,
     text,
     timestamp: serverTimestamp()
   });
 
   document.getElementById("chatInput").value = "";
-};
+}
 
 </script>
 
