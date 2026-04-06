@@ -162,10 +162,15 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChang
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
-    authDomain: "yusuf-5c586.firebaseapp.com",
-    projectId: "yusuf-5c586",
+  apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
+  authDomain: "yusuf-5c586.firebaseapp.com",
+  projectId: "yusuf-5c586",
+  storageBucket: "yusuf-5c586.firebasestorage.app",
+  messagingSenderId: "772209549280",
+  appId: "1:772209549280:web:003704162681f805e15585",
+  measurementId: "G-QLK34HJGCE"
 };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
