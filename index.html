@@ -6,57 +6,37 @@
 <title>Cloud App — Панель управления</title>
 
 <style>
-body {
-    font-family: 'Inter', sans-serif;
-    background: #f0f2f5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin: 0;
-}
+body { font-family: 'Inter', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
 
-.container {
-    width: 100%;
-    max-width: 500px;
-    background: white;
-    padding: 25px;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-}
+.container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; }
 
-.user-info {
-    display: none;
-    justify-content: space-between;
-    align-items: center;
-}
+.auth-card { text-align: center; }
 
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+#loginBtn { background: white; color: #444; border: 1px solid #dadce0; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; }
 
-.user-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid #007bff;
-}
+.user-info { display: none; align-items: center; justify-content: space-between; width: 100%; }
 
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
+.user-profile { display: flex; align-items: center; gap: 12px; }
 
-button {
-    cursor: pointer;
-}
+.user-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #007bff; }
 
+input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+
+#mainBtn { background: #007bff; color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
+
+.post { background: white; border: 1px solid #f0f0f0; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; }
+
+.post img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 400px; object-fit: cover; }
+
+.time { font-size: 12px; color: #9ca3af; position: absolute; top: 20px; right: 20px; }
+
+.actions { display: flex; gap: 8px; margin-top: 15px; }
+
+button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; border: 1px solid #eee; background: white; }
+
+.del-btn { margin-left: auto; background: none; border: none; color: red; cursor: pointer; }
+
+/* ===== АККАУНТЫ ===== */
 #accountBar {
     display: flex;
     gap: 8px;
@@ -65,10 +45,10 @@ button {
 }
 
 .accountChip {
-    background: #e5e7eb;
-    padding: 6px 10px;
-    border-radius: 20px;
     font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: #e5e7eb;
     cursor: pointer;
 }
 
@@ -77,77 +57,83 @@ button {
     color: white;
 }
 
-.post {
-    background: white;
-    padding: 15px;
-    margin-top: 10px;
-    border-radius: 12px;
-    position: relative;
-}
-
-.post img {
-    width: 100%;
-    border-radius: 10px;
-}
-
 </style>
 </head>
 
 <body>
 
+<!-- АККАУНТЫ -->
 <div class="container">
+    <div id="accountBar"></div>
+</div>
 
-<div id="accountBar"></div>
-
-<button id="loginBtn">Войти через Google</button>
-
-<div id="userInfo" class="user-info">
-    <div class="user-profile">
-        <img id="userPhoto" class="user-avatar">
-        <span id="userName"></span>
+<!-- AUTH -->
+<div class="container auth-card">
+    <div id="loggedOutUI">
+        <button id="loginBtn">Войти через Google</button>
     </div>
-    <button id="logoutBtn">Выйти</button>
+
+    <div id="userInfo" class="user-info">
+        <div class="user-profile">
+            <img id="userPhoto" class="user-avatar">
+            <span id="userName"></span>
+        </div>
+        <button id="logoutBtn">Выйти</button>
+    </div>
 </div>
 
-</div>
-
-<div class="container" id="form" style="display:none;">
-    <input id="contentInput" placeholder="Текст">
-    <input id="imageUrlInput" placeholder="Картинка">
+<!-- POST -->
+<div id="messageForm" class="container" style="display:none;">
+    <h3>Создать пост</h3>
+    <input type="text" id="nameInput" readonly>
+    <input type="text" id="contentInput" placeholder="Текст...">
+    <input type="text" id="imageUrlInput" placeholder="Ссылка на картинку (https://...)">
     <button id="mainBtn">Опубликовать</button>
 </div>
 
-<div id="feed" class="container"></div>
+<!-- FEED -->
+<div id="feed" style="max-width:500px;width:100%;"></div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import {
-getFirestore,
-collection, addDoc, query, orderBy,
-onSnapshot, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
 authDomain: "yusuf-5c586.firebaseapp.com",
-projectId: "yusuf-5c586"
+projectId: "yusuf-5c586",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* 🔥 FIX LOGIN SELECT ACCOUNT */
+/* 🔥 LOGIN FIX */
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
-/* ===== MULTI ACCOUNT STORAGE ===== */
+/* ===== ACCOUNTS SYSTEM ===== */
 let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
 let currentAccount = null;
 
-function saveAccounts(user) {
+function renderAccounts() {
+    const bar = document.getElementById("accountBar");
+    bar.innerHTML = "";
+
+    accounts.forEach(acc => {
+        const el = document.createElement("div");
+        el.className = "accountChip " + (acc.uid === currentAccount ? "active" : "");
+        el.innerText = acc.name;
+
+        el.onclick = () => switchAccount(acc.uid);
+
+        bar.appendChild(el);
+    });
+}
+
+function saveAccount(user) {
     if (!accounts.find(a => a.uid === user.uid)) {
         accounts.push({
             uid: user.uid,
@@ -157,21 +143,6 @@ function saveAccounts(user) {
         localStorage.setItem("accounts", JSON.stringify(accounts));
     }
     renderAccounts();
-}
-
-function renderAccounts() {
-    const bar = document.getElementById("accountBar");
-    bar.innerHTML = "";
-
-    accounts.forEach(acc => {
-        const div = document.createElement("div");
-        div.className = "accountChip " + (acc.uid === currentAccount ? "active" : "");
-        div.innerText = acc.name;
-
-        div.onclick = () => switchAccount(acc.uid);
-
-        bar.appendChild(div);
-    });
 }
 
 function switchAccount(uid) {
@@ -184,38 +155,39 @@ function switchAccount(uid) {
     document.getElementById("userPhoto").src = acc.photo;
 
     document.getElementById("userInfo").style.display = "flex";
-    document.getElementById("form").style.display = "block";
+    document.getElementById("messageForm").style.display = "block";
 
     renderAccounts();
 }
 
 /* AUTH */
-document.getElementById("loginBtn").onclick =
+document.getElementById('loginBtn').onclick =
 () => signInWithPopup(auth, provider);
 
-document.getElementById("logoutBtn").onclick =
+document.getElementById('logoutBtn').onclick =
 () => signOut(auth);
 
 onAuthStateChanged(auth, (user) => {
 
 if (user) {
-    saveAccounts(user);
+    saveAccount(user);
     currentAccount = user.uid;
     switchAccount(user.uid);
 }
 });
 
-/* POSTS */
-document.getElementById("mainBtn").onclick = async () => {
+/* POST */
+document.getElementById('mainBtn').onclick = async () => {
 await addDoc(collection(db,"requests"),{
 name: accounts.find(a => a.uid === currentAccount).name,
-text: contentInput.value,
-imageUrl: imageUrlInput.value || null,
+text: document.getElementById('contentInput').value,
+imageUrl: document.getElementById('imageUrlInput').value,
+reactions: {like:0,fire:0,laugh:0},
 timestamp: serverTimestamp()
 });
 
-contentInput.value = "";
-imageUrlInput.value = "";
+document.getElementById('contentInput').value="";
+document.getElementById('imageUrlInput').value="";
 };
 
 /* FEED */
@@ -230,12 +202,34 @@ const data=d.data();
 
 feed.innerHTML += `
 <div class="post">
+<span class="time">${data.timestamp?.toDate().toLocaleString() || ""}</span>
+
 <b>${data.name}</b>
 <p>${data.text || ""}</p>
+
 ${data.imageUrl ? `<img src="${data.imageUrl}">` : ""}
+
+<div class="actions">
+<button class="react-btn" onclick="react('${d.id}','like')">👍 ${data.reactions?.like||0}</button>
+<button class="react-btn" onclick="react('${d.id}','fire')">🔥 ${data.reactions?.fire||0}</button>
+<button class="react-btn" onclick="react('${d.id}','laugh')">😂 ${data.reactions?.laugh||0}</button>
+<button class="del-btn" onclick="deletePost('${d.id}')">Удалить</button>
+</div>
+
 </div>`;
 });
 });
+
+/* REACTIONS */
+window.react = async (id,type)=>{
+await updateDoc(doc(db,"requests",id),{
+[`reactions.${type}`]:increment(1)
+});
+};
+
+window.deletePost = async (id)=>{
+await deleteDoc(doc(db,"requests",id));
+};
 
 </script>
 
