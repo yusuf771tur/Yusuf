@@ -10,33 +10,33 @@
             background: #f0f2f5;
             margin: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center; /* Центрирует всё содержимое по горизонтали */
         }
 
-        /* Основная сетка как на скриншоте */
+        /* Центрирующая обертка */
         .main-layout {
             display: flex;
+            justify-content: center; /* Центрирует колонки между собой */
             width: 100%;
-            max-width: 1200px;
+            max-width: 1000px;
             gap: 20px;
             padding: 20px;
-            align-items: flex-start;
+            box-sizing: border-box;
         }
 
-        /* Левая колонка (Контакты и Чат) */
+        /* Левая колонка */
         .sidebar {
-            flex: 0 0 300px;
+            flex: 0 0 280px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            position: sticky;
-            top: 20px;
+            gap: 15px;
         }
 
-        /* Центральная колонка (Лента) */
+        /* Правая колонка */
         .feed-container {
             flex: 1;
-            max-width: 600px;
+            max-width: 550px;
         }
 
         .container {
@@ -44,10 +44,9 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
         }
 
-        /* Стили списка пользователей */
+        /* Стили аккаунтов */
         .account-item {
             display: flex;
             align-items: center;
@@ -56,136 +55,111 @@
             border-radius: 8px;
             cursor: pointer;
             transition: 0.2s;
-            border: 1px solid transparent;
             margin-bottom: 5px;
+            border: 1px solid transparent;
         }
+        .account-item:hover { background: #f0f2f5; }
+        .account-item.active { background: #e7f3ff; border-color: #007bff; }
 
-        .account-item:hover { background: #f8f9fa; }
-        .account-item.active { 
-            background: #e7f3ff; 
-            border-color: #007bff;
-        }
-
-        .mini-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
+        .mini-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
 
         /* Чат */
         #chatMessages {
-            height: 200px;
+            height: 250px;
             overflow-y: auto;
             border: 1px solid #eee;
             padding: 10px;
             border-radius: 8px;
-            font-size: 13px;
-            background: #fafafa;
+            background: #fcfcfc;
+            font-size: 14px;
+            margin-bottom: 10px;
         }
-
-        .msg { margin-bottom: 8px; }
+        .msg { margin-bottom: 8px; line-height: 1.4; }
         .msg-me { color: #007bff; text-align: right; }
 
-        /* Посты */
-        .post {
+        /* Шапка */
+        .top-nav {
+            width: 100%;
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            position: relative;
-            border: 1px solid #e0e0e0;
-        }
-
-        .post img {
-            width: 100%;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
-        .user-info-header {
+            padding: 10px 0;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            justify-content: center;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
         }
 
-        input, button#mainBtn, button#sendChatBtn {
+        input, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 5px 0;
             border-radius: 8px;
             border: 1px solid #ddd;
             box-sizing: border-box;
+            outline: none;
         }
 
         #mainBtn, #sendChatBtn {
             background: #007bff;
             color: white;
             border: none;
-            font-weight: 600;
+            font-weight: bold;
             cursor: pointer;
         }
 
-        .auth-top {
-            display: flex;
-            justify-content: center;
-            padding: 10px;
+        .post {
             background: white;
-            border-bottom: 1px solid #ddd;
-            width: 100%;
-            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
         }
+        .post img { width: 100%; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div style="width: 100%;">
-    <div class="auth-top">
-        <div id="loggedOutUI">
-            <button id="loginBtn">Войти через Google</button>
-        </div>
+<div class="top-nav">
+    <div id="authContent">
+        <button id="loginBtn" style="width: auto;">Войти через Google</button>
         <div id="userInfo" style="display:none; align-items: center; gap: 15px;">
             <img id="userPhoto" style="width:35px; border-radius:50%;">
-            <span id="userName" style="font-weight:bold;"></span>
-            <button id="logoutBtn" style="padding: 5px 10px;">Выйти</button>
+            <span id="userName"></span>
+            <button id="logoutBtn" style="width: auto; padding: 5px 10px;">Выйти</button>
+        </div>
+    </div>
+</div>
+
+<div class="main-layout">
+    <div class="sidebar">
+        <div class="container">
+            <h4 style="margin:0 0 15px 0;">Личные сообщения</h4>
+            <div id="accountList">Загрузка пользователей...</div>
+        </div>
+
+        <div id="chatBox" class="container" style="display:none;">
+            <h5 id="chatWithTitle" style="margin:0 0 10px 0;">Чат</h5>
+            <div id="chatMessages"></div>
+            <input type="text" id="chatInput" placeholder="Напишите сообщение...">
+            <button id="sendChatBtn">Отправить</button>
         </div>
     </div>
 
-    <div class="main-layout">
-        <div class="sidebar">
-            <div class="container">
-                <h4 style="margin-top:0">Личные сообщения</h4>
-                <div id="accountList">
-                    </div>
-            </div>
-
-            <div id="chatBox" class="container" style="display:none;">
-                <h4 id="chatWithTitle">Выберите чат</h4>
-                <div id="chatMessages"></div>
-                <input type="text" id="chatInput" placeholder="Сообщение...">
-                <button id="sendChatBtn">Отправить</button>
-            </div>
+    <div class="feed-container">
+        <div id="postForm" class="container" style="display:none; margin-bottom: 20px;">
+            <h4 style="margin-top:0">Создать запись</h4>
+            <input type="text" id="contentInput" placeholder="Что нового?">
+            <input type="text" id="imageUrlInput" placeholder="Ссылка на фото">
+            <button id="mainBtn">Опубликовать</button>
         </div>
 
-        <div class="feed-container">
-            <div id="messageForm" class="container" style="display:none;">
-                <h3>Создать запись в ленту</h3>
-                <input type="text" id="contentInput" placeholder="Что у вас нового?">
-                <input type="text" id="imageUrlInput" placeholder="Ссылка на картинку (URL)">
-                <button id="mainBtn">Опубликовать</button>
-            </div>
-
-            <div id="feed">
-                </div>
-        </div>
+        <div id="feed"></div>
     </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
@@ -197,142 +171,121 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
-let currentAccountUID = null;
-let currentChatUser = null;
-let chatUnsubscribe = null;
+let currentUID = null;
+let activeChatUID = null;
+let chatListener = null;
 
-function getChatId(uid1, uid2) {
-    return [uid1, uid2].sort().join("_");
-}
+// Функция для ID чата (всегда одинаковый для двух людей)
+const getChatId = (u1, u2) => [u1, u2].sort().join("_");
 
-/* Рендер списка контактов слева */
-function renderSidebarAccounts() {
-    const list = document.getElementById("accountList");
-    list.innerHTML = "";
-    accounts.forEach(acc => {
-        if (acc.uid === currentAccountUID) return; // Не показываем себя
+// 1. ЗАГРУЗКА ВСЕХ ПОЛЬЗОВАТЕЛЕЙ ИЗ БД
+function listenUsers() {
+    onSnapshot(collection(db, "users"), (snap) => {
+        const list = document.getElementById("accountList");
+        list.innerHTML = "";
+        snap.forEach(uDoc => {
+            const user = uDoc.data();
+            if (user.uid === currentUID) return;
 
-        const el = document.createElement("div");
-        el.className = `account-item ${currentChatUser === acc.uid ? 'active' : ''}`;
-        el.innerHTML = `
-            <img src="${acc.photo}" class="mini-avatar">
-            <span>${acc.name}</span>
-        `;
-        el.onclick = () => openChat(acc);
-        list.appendChild(el);
+            const el = document.createElement("div");
+            el.className = `account-item ${activeChatUID === user.uid ? 'active' : ''}`;
+            el.innerHTML = `<img src="${user.photo}" class="mini-avatar"> <span>${user.name}</span>`;
+            el.onclick = () => startChat(user);
+            list.appendChild(el);
+        });
     });
 }
 
-function openChat(user) {
-    currentChatUser = user.uid;
+// 2. ОТКРЫТИЕ ЧАТА
+function startChat(targetUser) {
+    activeChatUID = targetUser.uid;
     document.getElementById("chatBox").style.display = "block";
-    document.getElementById("chatWithTitle").innerText = `Чат с ${user.name}`;
-    renderSidebarAccounts();
-    listenPrivateChat(user.uid);
-}
-
-function listenPrivateChat(toUid) {
-    if (chatUnsubscribe) chatUnsubscribe();
+    document.getElementById("chatWithTitle").innerText = `Чат с: ${targetUser.name}`;
     
-    const chatId = getChatId(currentAccountUID, toUid);
+    if (chatListener) chatListener(); // Отписываемся от старого чата
+
+    const chatId = getChatId(currentUID, targetUser.uid);
     const q = query(collection(db, "conversations", chatId, "messages"), orderBy("timestamp"));
     
-    chatUnsubscribe = onSnapshot(q, snap => {
+    chatListener = onSnapshot(q, (snap) => {
         const box = document.getElementById("chatMessages");
         box.innerHTML = "";
-        snap.forEach(d => {
-            const data = d.data();
-            const isMe = data.from === currentAccountUID;
-            box.innerHTML += `<div class="msg ${isMe ? 'msg-me' : ''}">
-                <b>${isMe ? "Я" : data.name}:</b> ${data.text}
-            </div>`;
+        snap.forEach(m => {
+            const d = m.data();
+            const isMe = d.from === currentUID;
+            box.innerHTML += `<div class="msg ${isMe ? 'msg-me' : ''}"><b>${isMe ? 'Вы' : d.name}:</b> ${d.text}</div>`;
         });
         box.scrollTop = box.scrollHeight;
     });
+    listenUsers(); // Перерисовать, чтобы подсветить активный
 }
 
-/* AUTH */
-onAuthStateChanged(auth, user => {
+// 3. АВТОРИЗАЦИЯ
+onAuthStateChanged(auth, async (user) => {
     if (user) {
-        currentAccountUID = user.uid;
-        if (!accounts.find(a => a.uid === user.uid)) {
-            accounts.push({ uid: user.uid, name: user.displayName, photo: user.photoURL });
-            localStorage.setItem("accounts", JSON.stringify(accounts));
-        }
-        
-        document.getElementById("loggedOutUI").style.display = "none";
+        currentUID = user.uid;
+        // Сохраняем пользователя в БД, чтобы другие его видели
+        await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
+            name: user.displayName,
+            photo: user.photoURL
+        }, { merge: true });
+
+        document.getElementById("loginBtn").style.display = "none";
         document.getElementById("userInfo").style.display = "flex";
         document.getElementById("userName").innerText = user.displayName;
         document.getElementById("userPhoto").src = user.photoURL;
-        document.getElementById("messageForm").style.display = "block";
-        
-        renderSidebarAccounts();
+        document.getElementById("postForm").style.display = "block";
+        listenUsers();
     } else {
-        document.getElementById("loggedOutUI").style.display = "block";
-        document.getElementById("userInfo").style.display = "none";
-        document.getElementById("messageForm").style.display = "none";
-        document.getElementById("chatBox").style.display = "none";
+        location.reload(); // Сброс при выходе
     }
 });
 
 document.getElementById("loginBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
 document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
-/* POSTS */
-document.getElementById("mainBtn").onclick = async () => {
-    const text = document.getElementById("contentInput").value;
-    const imageUrl = document.getElementById("imageUrlInput").value;
-    const user = accounts.find(a => a.uid === currentAccountUID);
-
-    if(!text && !imageUrl) return;
-
-    await addDoc(collection(db, "requests"), {
-        name: user.name,
-        text,
-        imageUrl,
-        timestamp: serverTimestamp()
-    });
-
-    document.getElementById("contentInput").value = "";
-    document.getElementById("imageUrlInput").value = "";
-};
-
-/* FEED LISTENER */
-const qFeed = query(collection(db, "requests"), orderBy("timestamp", "desc"));
-onSnapshot(qFeed, snap => {
-    const feed = document.getElementById("feed");
-    feed.innerHTML = "";
-    snap.forEach(d => {
-        const data = d.data();
-        feed.innerHTML += `
-            <div class="post">
-                <div class="user-info-header">
-                    <b>${data.name}</b>
-                    <small style="color:#999">${data.timestamp?.toDate().toLocaleTimeString() || ""}</small>
-                </div>
-                <p>${data.text || ""}</p>
-                ${data.imageUrl ? `<img src="${data.imageUrl}">` : ""}
-            </div>`;
-    });
-});
-
-/* SEND MESSAGE */
+// 4. ОТПРАВКА СООБЩЕНИЯ
 document.getElementById("sendChatBtn").onclick = async () => {
     const text = document.getElementById("chatInput").value;
-    if (!text || !currentChatUser) return;
-    
-    const chatId = getChatId(currentAccountUID, currentChatUser);
-    const user = accounts.find(a => a.uid === currentAccountUID);
-    
+    if (!text || !activeChatUID) return;
+
+    const chatId = getChatId(currentUID, activeChatUID);
     await addDoc(collection(db, "conversations", chatId, "messages"), {
-        from: currentAccountUID,
-        name: user.name,
-        text,
+        from: currentUID,
+        name: auth.currentUser.displayName,
+        text: text,
         timestamp: serverTimestamp()
     });
     document.getElementById("chatInput").value = "";
 };
+
+// 5. ЛЕНТА ПОСТОВ
+document.getElementById("mainBtn").onclick = async () => {
+    const text = document.getElementById("contentInput").value;
+    const img = document.getElementById("imageUrlInput").value;
+    await addDoc(collection(db, "requests"), {
+        name: auth.currentUser.displayName,
+        text: text,
+        imageUrl: img,
+        timestamp: serverTimestamp()
+    });
+    document.getElementById("contentInput").value = "";
+    document.getElementById("imageUrlInput").value = "";
+};
+
+onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
+    const feed = document.getElementById("feed");
+    feed.innerHTML = "";
+    snap.forEach(d => {
+        const p = d.data();
+        feed.innerHTML += `<div class="post">
+            <div style="display:flex; justify-content:space-between"><b>${p.name}</b> <small>${p.timestamp?.toDate().toLocaleTimeString() || ''}</small></div>
+            <p>${p.text || ''}</p>
+            ${p.imageUrl ? `<img src="${p.imageUrl}">` : ''}
+        </div>`;
+    });
+});
 </script>
 </body>
 </html>
