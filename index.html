@@ -6,87 +6,118 @@
 <title>Cloud App — Панель управления</title>
 
 <style>
-body { font-family: 'Inter', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin: 0;
+}
 
-.container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; }
+.container {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
 
-.auth-card { text-align: center; }
+.user-info {
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+}
 
-#loginBtn { background: white; color: #444; border: 1px solid #dadce0; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; }
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-.user-info { display: none; align-items: center; justify-content: space-between; width: 100%; }
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+}
 
-.user-profile { display: flex; align-items: center; gap: 12px; }
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
 
-.user-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #007bff; }
+button {
+    cursor: pointer;
+}
 
-input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #e0e0e0; border-radius: 8px; }
+#accountBar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
 
-#mainBtn { background: #007bff; color: white; border: none; padding: 14px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
+.accountChip {
+    background: #e5e7eb;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+}
 
-.post { background: white; border: 1px solid #f0f0f0; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; }
+.accountChip.active {
+    background: #007bff;
+    color: white;
+}
 
-.post img { width: 100%; border-radius: 8px; margin-top: 10px; }
+.post {
+    background: white;
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 12px;
+    position: relative;
+}
 
-.actions { display: flex; gap: 8px; margin-top: 15px; }
-
-.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; border: 1px solid #eee; background: white; }
-
-.del-btn { margin-left: auto; background: none; border: none; color: red; cursor: pointer; }
-
-/* ===== DM STYLE ===== */
-.dmBox { height: 220px; overflow: auto; border: 1px solid #eee; padding: 10px; background: #fafafa; border-radius: 10px; }
-
-.chatItem { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
-
-.chatItem:hover { background: #f1f1f1; }
+.post img {
+    width: 100%;
+    border-radius: 10px;
+}
 
 </style>
 </head>
 
 <body>
 
-<!-- AUTH -->
-<div class="container auth-card">
-    <div id="loggedOutUI">
-        <button id="loginBtn">Войти через Google</button>
-    </div>
+<div class="container">
 
-    <div id="userInfo" class="user-info">
-        <div class="user-profile">
-            <img id="userPhoto" class="user-avatar">
-            <span id="userName"></span>
-        </div>
-        <button id="logoutBtn">Выйти</button>
+<div id="accountBar"></div>
+
+<button id="loginBtn">Войти через Google</button>
+
+<div id="userInfo" class="user-info">
+    <div class="user-profile">
+        <img id="userPhoto" class="user-avatar">
+        <span id="userName"></span>
     </div>
+    <button id="logoutBtn">Выйти</button>
 </div>
 
-<!-- POST -->
-<div id="messageForm" class="container" style="display:none;">
-    <h3>Создать пост</h3>
-    <input type="text" id="nameInput" readonly>
-    <input type="text" id="contentInput" placeholder="Текст...">
-    <input type="text" id="imageUrlInput" placeholder="Ссылка">
+</div>
+
+<div class="container" id="form" style="display:none;">
+    <input id="contentInput" placeholder="Текст">
+    <input id="imageUrlInput" placeholder="Картинка">
     <button id="mainBtn">Опубликовать</button>
 </div>
 
-<!-- FEED -->
 <div id="feed" class="container"></div>
-
-<!-- ===== DM ===== -->
-<div class="container">
-<h3>Личные сообщения</h3>
-
-<input id="toUid" placeholder="UID пользователя">
-<button onclick="openChat()">Открыть чат</button>
-
-<div id="chatList"></div>
-
-<div class="dmBox" id="dmBox"></div>
-
-<input id="dmInput" placeholder="Сообщение">
-<button onclick="sendDM()">Отправить</button>
-</div>
 
 <script type="module">
 
@@ -95,175 +126,116 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChang
 import {
 getFirestore,
 collection, addDoc, query, orderBy,
-onSnapshot, serverTimestamp,
-updateDoc, doc, increment,
-deleteDoc, getDocs, where
+onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
 authDomain: "yusuf-5c586.firebaseapp.com",
-projectId: "yusuf-5c586",
+projectId: "yusuf-5c586"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
 
-let currentChatId = null;
+/* 🔥 FIX LOGIN SELECT ACCOUNT */
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: "select_account" });
+
+/* ===== MULTI ACCOUNT STORAGE ===== */
+let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+let currentAccount = null;
+
+function saveAccounts(user) {
+    if (!accounts.find(a => a.uid === user.uid)) {
+        accounts.push({
+            uid: user.uid,
+            name: user.displayName,
+            photo: user.photoURL
+        });
+        localStorage.setItem("accounts", JSON.stringify(accounts));
+    }
+    renderAccounts();
+}
+
+function renderAccounts() {
+    const bar = document.getElementById("accountBar");
+    bar.innerHTML = "";
+
+    accounts.forEach(acc => {
+        const div = document.createElement("div");
+        div.className = "accountChip " + (acc.uid === currentAccount ? "active" : "");
+        div.innerText = acc.name;
+
+        div.onclick = () => switchAccount(acc.uid);
+
+        bar.appendChild(div);
+    });
+}
+
+function switchAccount(uid) {
+    const acc = accounts.find(a => a.uid === uid);
+    if (!acc) return;
+
+    currentAccount = uid;
+
+    document.getElementById("userName").innerText = acc.name;
+    document.getElementById("userPhoto").src = acc.photo;
+
+    document.getElementById("userInfo").style.display = "flex";
+    document.getElementById("form").style.display = "block";
+
+    renderAccounts();
+}
 
 /* AUTH */
-document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
-document.getElementById('logoutBtn').onclick = () => signOut(auth);
+document.getElementById("loginBtn").onclick =
+() => signInWithPopup(auth, provider);
+
+document.getElementById("logoutBtn").onclick =
+() => signOut(auth);
 
 onAuthStateChanged(auth, (user) => {
-document.getElementById('loggedOutUI').style.display = user ? 'none' : 'block';
-document.getElementById('userInfo').style.display = user ? 'flex' : 'none';
-document.getElementById('messageForm').style.display = user ? 'block' : 'none';
 
-if(user){
-document.getElementById('userName').innerText = user.displayName;
-document.getElementById('userPhoto').src = user.photoURL;
-document.getElementById('nameInput').value = user.displayName;
+if (user) {
+    saveAccounts(user);
+    currentAccount = user.uid;
+    switchAccount(user.uid);
 }
 });
 
 /* POSTS */
-document.getElementById('mainBtn').onclick = async () => {
+document.getElementById("mainBtn").onclick = async () => {
 await addDoc(collection(db,"requests"),{
-name:auth.currentUser.displayName,
-text:document.getElementById('contentInput').value,
-imageUrl:document.getElementById('imageUrlInput').value,
-reactions:{like:0,fire:0,laugh:0},
-timestamp:serverTimestamp()
+name: accounts.find(a => a.uid === currentAccount).name,
+text: contentInput.value,
+imageUrl: imageUrlInput.value || null,
+timestamp: serverTimestamp()
 });
+
+contentInput.value = "";
+imageUrlInput.value = "";
 };
 
+/* FEED */
 const q = query(collection(db,"requests"),orderBy("timestamp","desc"));
 
 onSnapshot(q,(snap)=>{
-const feed=document.getElementById('feed');
+const feed=document.getElementById("feed");
 feed.innerHTML="";
 
 snap.forEach(d=>{
 const data=d.data();
 
-feed.innerHTML+=`
+feed.innerHTML += `
 <div class="post">
 <b>${data.name}</b>
-<p>${data.text||""}</p>
-${data.imageUrl?`<img src="${data.imageUrl}">`:""}
+<p>${data.text || ""}</p>
+${data.imageUrl ? `<img src="${data.imageUrl}">` : ""}
 </div>`;
 });
 });
-
-/* DELETE + REACTIONS */
-window.react = async (id,type)=>{
-await updateDoc(doc(db,"requests",id),{
-[`reactions.${type}`]:increment(1)
-});
-};
-
-window.deletePost = async (id)=>{
-await deleteDoc(doc(db,"requests",id));
-};
-
-/* ===== DM SYSTEM ===== */
-
-async function getOrCreateChat(uid1,uid2){
-const q=query(collection(db,"conversations"),where("users","array-contains",uid1));
-const snap=await getDocs(q);
-
-let chatId=null;
-
-snap.forEach(d=>{
-if(d.data().users.includes(uid2)) chatId=d.id;
-});
-
-if(chatId) return chatId;
-
-const newChat = await addDoc(collection(db,"conversations"),{
-users:[uid1,uid2]
-});
-
-return newChat.id;
-}
-
-window.openChat = async () => {
-const uid2=document.getElementById("toUid").value;
-const uid1=auth.currentUser.uid;
-
-currentChatId=await getOrCreateChat(uid1,uid2);
-listenMessages(currentChatId);
-loadChats();
-};
-
-window.sendDM = async () => {
-const text=document.getElementById("dmInput").value;
-if(!text||!currentChatId) return;
-
-await addDoc(collection(db,"conversations",currentChatId,"messages"),{
-text,
-senderId:auth.currentUser.uid,
-senderName:auth.currentUser.displayName,
-senderPhoto:auth.currentUser.photoURL,
-read:false,
-timestamp:serverTimestamp()
-});
-
-document.getElementById("dmInput").value="";
-};
-
-/* MESSAGES */
-function listenMessages(chatId){
-const q=query(collection(db,"conversations",chatId,"messages"),orderBy("timestamp","asc"));
-
-onSnapshot(q,(snap)=>{
-const box=document.getElementById("dmBox");
-box.innerHTML="";
-
-snap.forEach(m=>{
-const d=m.data();
-const me=d.senderId===auth.currentUser.uid;
-
-box.innerHTML+=`
-<div style="display:flex;gap:8px;margin:8px 0;">
-<img src="${d.senderPhoto}" style="width:32px;height:32px;border-radius:50%;">
-
-<div style="background:${me?'#dbeafe':'#f3f4f6'};padding:8px;border-radius:10px;max-width:70%;">
-<div>${d.text}</div>
-<div style="font-size:11px;opacity:0.6;">${me?"✔✔":""}</div>
-</div>
-
-</div>`;
-});
-});
-}
-
-/* CHAT LIST */
-function loadChats(){
-const q=query(collection(db,"conversations"),where("users","array-contains",auth.currentUser.uid));
-
-onSnapshot(q,(snap)=>{
-const box=document.getElementById("chatList");
-box.innerHTML="";
-
-snap.forEach(c=>{
-const other=c.data().users.find(u=>u!==auth.currentUser.uid);
-
-box.innerHTML+=`
-<div class="chatItem" onclick="openById('${c.id}')">
-💬 ${other}
-</div>`;
-});
-});
-}
-
-window.openById=(id)=>{
-currentChatId=id;
-listenMessages(id);
-};
 
 </script>
 
