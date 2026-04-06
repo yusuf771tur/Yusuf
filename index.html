@@ -19,7 +19,7 @@
         .post img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 400px; object-fit: cover; }
         .time { font-size: 12px; color: #9ca3af; position: absolute; top: 20px; right: 20px; }
         .actions { display: flex; gap: 8px; margin-top: 15px; }
-        .like-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; border: 1px solid #eee; }
+        button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; border: 1px solid #eee; background: white; }
         .del-btn { margin-left: auto; background: none; border: none; color: red; cursor: pointer; }
     </style>
 </head>
@@ -41,8 +41,8 @@
 
 <div id="messageForm" class="container" style="display:none;">
     <h3>Создать пост</h3>
-    <input type="text" id="name" readonly>
-    <input type="text" id="content" placeholder="Текст...">
+    <input type="text" id="nameInput" readonly>
+    <input type="text" id="contentInput" placeholder="Текст...">
     <input type="text" id="imageUrlInput" placeholder="Ссылка на картинку (https://...)">
     <button id="mainBtn">Опубликовать</button>
 </div>
@@ -65,23 +65,26 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-loginBtn.onclick = () => signInWithPopup(auth, provider);
-logoutBtn.onclick = () => signOut(auth);
+// Привязка к кнопкам
+document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
 onAuthStateChanged(auth, (user) => {
-    loggedOutUI.style.display = user ? 'none' : 'block';
-    userInfo.style.display = user ? 'flex' : 'none';
-    messageForm.style.display = user ? 'block' : 'none';
+    document.getElementById('loggedOutUI').style.display = user ? 'none' : 'block';
+    document.getElementById('userInfo').style.display = user ? 'flex' : 'none';
+    document.getElementById('messageForm').style.display = user ? 'block' : 'none';
 
     if (user) {
-        userName.innerText = user.displayName;
-        userPhoto.src = user.photoURL;
-        name.value = user.displayName;
+        document.getElementById('userName').innerText = user.displayName;
+        document.getElementById('userPhoto').src = user.photoURL;
+        document.getElementById('nameInput').value = user.displayName;
     }
 });
 
+// Ключевое исправление: выносим функции в глобальное окно (window)
 window.react = async (id, type) => {
-    await updateDoc(doc(db, "requests", id), {
+    const postRef = doc(db, "requests", id);
+    await updateDoc(postRef, {
         [`reactions.${type}`]: increment(1)
     });
 };
@@ -92,8 +95,8 @@ window.deletePost = async (id) => {
     }
 };
 
-mainBtn.onclick = async () => {
-    const content = document.getElementById('content').value;
+document.getElementById('mainBtn').onclick = async () => {
+    const content = document.getElementById('contentInput').value;
     const imageUrl = document.getElementById('imageUrlInput').value;
 
     if (!content && !imageUrl) return alert("Добавь текст или ссылку!");
@@ -106,29 +109,32 @@ mainBtn.onclick = async () => {
         timestamp: serverTimestamp()
     });
 
-    content.value = "";
-    imageUrlInput.value = "";
+    // Очистка полей
+    document.getElementById('contentInput').value = "";
+    document.getElementById('imageUrlInput').value = "";
 };
 
 const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
 
 onSnapshot(q, (snapshot) => {
+    const feed = document.getElementById('feed');
     feed.innerHTML = "";
 
     snapshot.forEach((docItem) => {
         const data = docItem.data();
         const img = data.imageUrl ? `<img src="${data.imageUrl}">` : "";
+        const timeStr = data.timestamp ? data.timestamp.toDate().toLocaleString() : "...";
 
         feed.innerHTML += `
             <div class="post">
-                <span class="time">${data.timestamp ? data.timestamp.toDate().toLocaleString() : ''}</span>
+                <span class="time">${timeStr}</span>
                 <b>${data.name}</b>
                 <p>${data.text || ''}</p>
                 ${img}
                 <div class="actions">
-                    <button onclick="react('${docItem.id}','like')">👍 ${data.reactions?.like || 0}</button>
-                    <button onclick="react('${docItem.id}','fire')">🔥 ${data.reactions?.fire || 0}</button>
-                    <button onclick="react('${docItem.id}','laugh')">😂 ${data.reactions?.laugh || 0}</button>
+                    <button class="react-btn" onclick="react('${docItem.id}','like')">👍 ${data.reactions?.like || 0}</button>
+                    <button class="react-btn" onclick="react('${docItem.id}','fire')">🔥 ${data.reactions?.fire || 0}</button>
+                    <button class="react-btn" onclick="react('${docItem.id}','laugh')">😂 ${data.reactions?.laugh || 0}</button>
                     <button class="del-btn" onclick="deletePost('${docItem.id}')">Удалить</button>
                 </div>
             </div>
