@@ -3,31 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud App — Объединенная версия</title>
+    <title>CloudApp — Premium Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #007bff;
-            --bg: #f0f2f5;
+            --primary-hover: #0056b3;
+            --bg: #f4f7f9;
             --card: #ffffff;
+            --text-main: #1a1d21;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 20px;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg);
+            color: var(--text-main);
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Шапка */
+        /* Header */
         .top-nav {
             width: 100%;
-            background: var(--card);
-            padding: 10px 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 0;
             display: flex;
             justify-content: center;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -35,89 +44,140 @@
 
         .nav-content {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 24px;
             box-sizing: border-box;
         }
 
-        /* Сетка */
+        .logo {
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        /* Grid System */
         .main-layout {
             display: grid;
-            grid-template-columns: 280px 1fr 320px;
-            gap: 20px;
+            grid-template-columns: 300px 1fr 340px;
+            gap: 24px;
             width: 100%;
-            max-width: 1100px;
-            padding: 20px;
+            max-width: 1200px;
+            padding: 24px;
             box-sizing: border-box;
+            align-items: start;
         }
 
         .container {
             background: var(--card);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
         }
 
-        /* Пользователи */
+        /* Profile & Sidebar */
         .user-card { text-align: center; }
-        .user-avatar { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--primary); }
-        
-        .account-chip {
-            display: inline-flex;
-            align-items: center;
-            background: #e4e6eb;
-            padding: 5px 12px;
-            border-radius: 20px;
-            margin: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: 0.2s;
+        .user-avatar { 
+            width: 80px; height: 80px; 
+            border-radius: 50%; 
+            border: 4px solid var(--bg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            object-fit: cover;
         }
-        .account-chip.active { background: var(--primary); color: white; }
-
-        /* Посты */
-        .post { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid #eee; position: relative; margin-bottom: 15px; }
-        .post img { width: 100%; border-radius: 12px; margin-top: 10px; max-height: 400px; object-fit: cover; }
-        .post-time { font-size: 11px; color: #999; float: right; }
         
-        .reactions { display: flex; gap: 10px; margin-top: 15px; }
-        .react-btn { 
-            border: 1px solid #eee; background: #f8f9fa; 
-            padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: 0.2s;
-        }
-        .react-btn:hover { background: #e9ecef; }
-
-        /* Чат */
-        #chatMessages {
-            height: 350px;
-            overflow-y: auto;
-            border: 1px solid #f0f0f0;
-            padding: 10px;
-            border-radius: 12px;
-            background: #fafafa;
+        .section-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 16px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 8px;
         }
-        .msg { padding: 8px 12px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
-        .msg-me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .msg-them { background: #e4e6eb; color: black; align-self: flex-start; border-bottom-left-radius: 2px; }
 
-        input, button {
-            width: 100%; padding: 12px; margin: 8px 0;
-            border-radius: 10px; border: 1px solid #ddd; outline: none; box-sizing: border-box;
+        /* User List */
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
         }
-        
-        .btn-primary { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .btn-primary:hover { opacity: 0.9; }
+        .user-item:hover { background: var(--bg); }
+        .user-item.active { background: #eef6ff; color: var(--primary); font-weight: 600; }
+        .user-item img { width: 32px; height: 32px; border-radius: 50%; }
 
-        @media (max-width: 900px) {
-            .main-layout { grid-template-columns: 1fr; }
-            .sidebar, .chat-sidebar { display: none; }
+        /* Feed & Posts */
+        .post { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: var(--radius); 
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .author-name { font-weight: 600; font-size: 15px; }
+        .post-time { font-size: 12px; color: var(--text-muted); }
+        .post-content { line-height: 1.6; font-size: 15px; margin-bottom: 12px; }
+        .post img { width: 100%; border-radius: 14px; margin-top: 10px; display: block; }
+
+        /* Reactions */
+        .reactions { display: flex; gap: 8px; margin-top: 16px; }
+        .react-btn { 
+            border: 1px solid var(--border); 
+            background: #f8fafc; 
+            padding: 8px 16px; 
+            border-radius: 100px; 
+            cursor: pointer; 
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .react-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
+
+        /* Chat */
+        #chatMessages {
+            height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            background: #fdfdfd;
+            border-radius: 14px;
+            border: 1px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+        .msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; font-size: 14px; position: relative; }
+        .msg-me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-them { background: #f1f5f9; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
+
+        /* Inputs */
+        input {
+            width: 100%; padding: 12px 16px; margin: 8px 0;
+            border-radius: 12px; border: 1px solid var(--border); 
+            background: #f8fafc; font-family: inherit; transition: 0.2s;
+        }
+        input:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(0,123,255,0.1); }
+        
+        .btn-primary { 
+            background: var(--primary); color: white; border: none; 
+            padding: 12px; border-radius: 12px; font-weight: 600; 
+            cursor: pointer; transition: all 0.2s; width: 100%;
+        }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,123,255,0.2); }
+
+        @media (max-width: 1100px) {
+            .main-layout { grid-template-columns: 1fr; max-width: 600px; }
+            .sidebar, .chat-sidebar { width: 100%; }
         }
     </style>
 </head>
@@ -125,12 +185,12 @@
 
 <div class="top-nav">
     <div class="nav-content">
-        <h2 style="color: var(--primary); margin: 0;">CloudApp</h2>
+        <div class="logo">CloudApp</div>
         <div id="authBox">
-            <button id="loginBtn" class="btn-primary" style="width: auto; padding: 8px 20px;">Войти</button>
-            <div id="userInfo" style="display:none; align-items: center; gap: 10px;">
-                <span id="navName" style="font-weight: 600;"></span>
-                <button id="logoutBtn" style="width: auto; padding: 5px 12px; cursor: pointer;">Выйти</button>
+            <button id="loginBtn" class="btn-primary" style="width: auto; padding: 8px 24px;">Войти через Google</button>
+            <div id="userInfo" style="display:none; align-items: center; gap: 16px;">
+                <span id="navName" style="font-weight: 500; font-size: 14px;"></span>
+                <button id="logoutBtn" style="background:none; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px;">Выйти</button>
             </div>
         </div>
     </div>
@@ -138,35 +198,39 @@
 
 <div class="main-layout">
     <div class="sidebar">
-        <div class="container user-card" id="myProfile" style="display:none;">
+        <div class="container user-card" id="myProfile" style="display:none; margin-bottom: 24px;">
             <img id="userPhoto" class="user-avatar" src="">
-            <h3 id="userName" style="margin: 10px 0 5px;"></h3>
-            <p style="color: gray; font-size: 12px;">Ваш профиль</p>
-            <hr>
-            <div id="accountBar"></div>
+            <h3 id="userName" style="margin: 16px 0 4px; font-size: 18px;"></h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Online</p>
         </div>
+        
         <div class="container">
-            <h4>Собеседники</h4>
+            <div class="section-title">💬 Собеседники</div>
             <div id="userList">Загрузка...</div>
         </div>
     </div>
 
     <div class="feed-container">
-        <div id="postForm" class="container" style="display:none;">
-            <h4 style="margin:0 0 10px;">Создать пост</h4>
+        <div id="postForm" class="container" style="display:none; margin-bottom: 24px;">
+            <div class="section-title">✨ Создать запись</div>
             <input type="text" id="contentInput" placeholder="Что у вас нового?">
-            <input type="text" id="imageUrlInput" placeholder="Ссылка на фото (необязательно)">
+            <input type="text" id="imageUrlInput" placeholder="Ссылка на фото (URL)">
             <button id="mainBtn" class="btn-primary">Опубликовать</button>
         </div>
         <div id="feed"></div>
     </div>
 
     <div class="chat-sidebar">
-        <div id="chatBox" class="container" style="display:none;">
-            <h4 id="chatHeader" style="margin:0 0 10px;">Чат</h4>
+        <div id="chatBox" class="container" style="display:none; position: sticky; top: 84px;">
+            <div class="section-title" id="chatHeader">Выберите чат</div>
             <div id="chatMessages"></div>
-            <input type="text" id="chatInput" placeholder="Напишите сообщение...">
-            <button id="sendChatBtn" class="btn-primary">Отправить</button>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="chatInput" placeholder="Сообщение..." style="margin: 0;">
+                <button id="sendChatBtn" class="btn-primary" style="width: 50px; padding: 0;">🚀</button>
+            </div>
+        </div>
+        <div id="chatPlaceholder" class="container" style="text-align: center; color: var(--text-muted); font-size: 14px;">
+            Нажмите на пользователя слева, чтобы начать переписку
         </div>
     </div>
 </div>
@@ -176,10 +240,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+// Твой обновленный конфиг
 const firebaseConfig = {
     apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
     authDomain: "yusuf-5c586.firebaseapp.com",
     projectId: "yusuf-5c586",
+    storageBucket: "yusuf-5c586.firebasestorage.app",
+    messagingSenderId: "772209549280",
+    appId: "1:772209549280:web:003704162681f805e15585",
+    measurementId: "G-QLK34HJGCE"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -190,10 +259,8 @@ let currentUID = null;
 let activeChatUID = null;
 let chatListener = null;
 
-// Помощник для ID чата
 const getChatId = (u1, u2) => [u1, u2].sort().join("_");
 
-// 1. АВТОРИЗАЦИЯ
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
@@ -209,7 +276,6 @@ onAuthStateChanged(auth, async (user) => {
             photo: user.photoURL
         }, { merge: true });
 
-        // UI
         document.getElementById("loginBtn").style.display = "none";
         document.getElementById("userInfo").style.display = "flex";
         document.getElementById("navName").innerText = user.displayName;
@@ -218,30 +284,10 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("userPhoto").src = user.photoURL;
         document.getElementById("postForm").style.display = "block";
         
-        updateAccountBar();
         listenUsers();
     }
 });
 
-// 2. СПИСОК АККАУНТОВ (из localStorage как во втором коде)
-function updateAccountBar() {
-    let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
-    if (auth.currentUser && !accounts.find(a => a.uid === auth.currentUser.uid)) {
-        accounts.push({ uid: auth.currentUser.uid, name: auth.currentUser.displayName });
-        localStorage.setItem("accounts", JSON.stringify(accounts));
-    }
-    const bar = document.getElementById("accountBar");
-    bar.innerHTML = "";
-    accounts.forEach(acc => {
-        const chip = document.createElement("div");
-        chip.className = `account-chip ${acc.uid === currentUID ? 'active' : ''}`;
-        chip.innerText = acc.name;
-        chip.onclick = () => alert("Для смены аккаунта нажмите 'Выйти' и выберите другой");
-        bar.appendChild(chip);
-    });
-}
-
-// 3. СПИСОК ПОЛЬЗОВАТЕЛЕЙ ДЛЯ ЧАТА
 function listenUsers() {
     onSnapshot(collection(db, "users"), (snap) => {
         const list = document.getElementById("userList");
@@ -250,18 +296,17 @@ function listenUsers() {
             const user = uDoc.data();
             if (user.uid === currentUID) return;
             const el = document.createElement("div");
-            el.className = "account-chip";
-            el.style.width = "100%";
-            el.innerHTML = `<img src="${user.photo}" style="width:20px;height:20px;border-radius:50%;margin-right:8px;"> ${user.name}`;
+            el.className = `user-item ${activeChatUID === user.uid ? 'active' : ''}`;
+            el.innerHTML = `<img src="${user.photo}"> <span>${user.name}</span>`;
             el.onclick = () => startChat(user);
             list.appendChild(el);
         });
     });
 }
 
-// 4. ЛИЧНЫЙ ЧАТ
 function startChat(targetUser) {
     activeChatUID = targetUser.uid;
+    document.getElementById("chatPlaceholder").style.display = "none";
     document.getElementById("chatBox").style.display = "block";
     document.getElementById("chatHeader").innerText = `Чат с ${targetUser.name}`;
     
@@ -275,10 +320,11 @@ function startChat(targetUser) {
         snap.forEach(m => {
             const d = m.data();
             const isMe = d.from === currentUID;
-            box.innerHTML += `<div class="msg ${isMe ? 'msg-me' : 'msg-them'}"><b>${isMe ? 'Вы' : d.name}:</b><br>${d.text}</div>`;
+            box.innerHTML += `<div class="msg ${isMe ? 'msg-me' : 'msg-them'}">${d.text}</div>`;
         });
         box.scrollTop = box.scrollHeight;
     });
+    listenUsers();
 }
 
 document.getElementById("sendChatBtn").onclick = async () => {
@@ -293,15 +339,14 @@ document.getElementById("sendChatBtn").onclick = async () => {
     document.getElementById("chatInput").value = "";
 };
 
-// 5. ЛЕНТА И РЕАКЦИИ
 document.getElementById("mainBtn").onclick = async () => {
     const text = document.getElementById("contentInput").value;
     const img = document.getElementById("imageUrlInput").value;
     if (!text && !img) return;
     await addDoc(collection(db, "requests"), {
         name: auth.currentUser.displayName,
-        text: text,
-        imageUrl: img,
+        text: text || "",
+        imageUrl: img || "",
         reactions: { like: 0, fire: 0, laugh: 0 },
         timestamp: serverTimestamp()
     });
@@ -317,14 +362,16 @@ onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (sna
         const id = d.id;
         feed.innerHTML += `
             <div class="post">
-                <span class="post-time">${p.timestamp?.toDate().toLocaleTimeString() || ''}</span>
-                <b>${p.name}</b>
-                <p>${p.text || ''}</p>
+                <div class="post-header">
+                    <span class="author-name">${p.name}</span>
+                    <span class="post-time">${p.timestamp?.toDate().toLocaleTimeString() || ''}</span>
+                </div>
+                ${p.text ? `<div class="post-content">${p.text}</div>` : ''}
                 ${p.imageUrl ? `<img src="${p.imageUrl}">` : ''}
                 <div class="reactions">
-                    <button class="react-btn" onclick="window.react('${id}','like')">👍 ${p.reactions?.like || 0}</button>
-                    <button class="react-btn" onclick="window.react('${id}','fire')">🔥 ${p.reactions?.fire || 0}</button>
-                    <button class="react-btn" onclick="window.react('${id}','laugh')">😂 ${p.reactions?.laugh || 0}</button>
+                    <button class="react-btn" onclick="window.react('${id}','like')"><span>👍</span> <b>${p.reactions?.like || 0}</b></button>
+                    <button class="react-btn" onclick="window.react('${id}','fire')"><span>🔥</span> <b>${p.reactions?.fire || 0}</b></button>
+                    <button class="react-btn" onclick="window.react('${id}','laugh')"><span>😂</span> <b>${p.reactions?.laugh || 0}</b></button>
                 </div>
             </div>`;
     });
