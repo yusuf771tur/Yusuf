@@ -141,6 +141,7 @@ button.react-btn {
   border-radius: 20px;
   background: #e5e7eb;
   cursor: pointer;
+  transition: 0.2s;
 }
 
 .accountChip.active {
@@ -156,6 +157,7 @@ button.react-btn {
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 10px;
+  background: #f9f9f9;
 }
 
 #sendChatBtn {
@@ -182,6 +184,36 @@ button.react-btn {
   margin-bottom: 10px;
   border-radius: 10px;
   border: 1px solid #ddd;
+}
+
+/* Мессенджер стиль */
+.chat-bubble {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 6px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.chat-bubble.me {
+  background: #007bff;
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 0;
+}
+
+.chat-bubble.other {
+  background: #e5e7eb;
+  color: #333;
+  margin-right: auto;
+  border-bottom-left-radius: 0;
+}
+
+.chat-bubble-time {
+  font-size: 10px;
+  color: #888;
+  text-align: right;
 }
 </style>
 </head>
@@ -265,7 +297,7 @@ let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
 let currentAccount = null;
 let currentChatUser = null;
 
-/* 🔥 ДОБАВИЛ */
+/* 🔥 Функции для аккаунтов */
 function getChatId(uid1, uid2) {
   return [uid1, uid2].sort().join("_");
 }
@@ -281,6 +313,14 @@ function renderAccounts() {
     el.onclick = () => switchAccount(acc.uid);
     bar.appendChild(el);
   });
+
+  if (!currentAccount && accounts.length > 0) {
+    const chooseMsg = document.createElement("div");
+    chooseMsg.innerText = "Выберите аккаунт для входа:";
+    chooseMsg.style.fontWeight = "600";
+    chooseMsg.style.marginBottom = "8px";
+    bar.prepend(chooseMsg);
+  }
 }
 
 function saveAccount(user) {
@@ -308,14 +348,11 @@ function switchAccount(uid) {
   document.getElementById("messageForm").style.display = "block";
   document.getElementById("chatBox").style.display = "block";
 
-  /* 🔥 ДОБАВИЛ */
   const other = accounts.find(a => a.uid !== uid);
   if (other) {
     currentChatUser = other.uid;
     listenPrivateChat(other.uid);
-
-    document.getElementById("sendChatBtn").onclick = () =>
-      sendPrivateMessage(other.uid);
+    document.getElementById("sendChatBtn").onclick = () => sendPrivateMessage(other.uid);
   }
 
   renderAccounts();
@@ -388,8 +425,7 @@ window.deletePost = async (id) => {
   await deleteDoc(doc(db, "requests", id));
 };
 
-/* ===== ЛИЧНЫЙ ЧАТ (ЗАМЕНА) ===== */
-
+/* ===== ЛИЧНЫЙ ЧАТ ===== */
 function listenPrivateChat(withUid) {
   const chatId = getChatId(currentAccount, withUid);
   const messagesRef = collection(db, "chats", chatId, "messages");
@@ -402,17 +438,20 @@ function listenPrivateChat(withUid) {
       const data = d.data();
       const isMe = data.from === currentAccount;
 
-      box.innerHTML += `
-        <div>
-          <b>${isMe ? "Ты" : "Он"}:</b> ${data.text}
-        </div>
-      `;
+      const msgEl = document.createElement("div");
+      msgEl.className = `chat-bubble ${isMe ? "me" : "other"}`;
+      msgEl.innerHTML = `<b>${isMe ? "Ты" : data.name}:</b> ${data.text} 
+        <div class="chat-bubble-time">${data.timestamp?.toDate().toLocaleTimeString() || ""}</div>`;
+
+      box.appendChild(msgEl);
     });
+
+    box.scrollTop = box.scrollHeight;
   });
 }
 
 async function sendPrivateMessage(toUid) {
-  const text = document.getElementById("chatInput").value;
+  const text = document.getElementById("chatInput").value.trim();
   if (!text) return;
 
   const chatId = getChatId(currentAccount, toUid);
@@ -422,6 +461,7 @@ async function sendPrivateMessage(toUid) {
     from: currentAccount,
     to: toUid,
     text,
+    name: accounts.find(a => a.uid === currentAccount).name,
     timestamp: serverTimestamp()
   });
 
@@ -429,6 +469,5 @@ async function sendPrivateMessage(toUid) {
 }
 
 </script>
-
 </body>
 </html>
