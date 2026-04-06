@@ -36,13 +36,8 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
 
 .del-btn { margin-left: auto; background: none; border: none; color: red; cursor: pointer; }
 
-/* ===== АККАУНТЫ ===== */
-#accountBar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
+/* ===== ACCOUNTS ===== */
+#accountBar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 
 .accountChip {
     font-size: 12px;
@@ -59,7 +54,7 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
 
 /* ===== CHAT ===== */
 #chatMessages {
-    height: 250px;
+    height: 200px;
     overflow-y: auto;
     border: 1px solid #eee;
     padding: 10px;
@@ -67,7 +62,6 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
     margin-bottom: 10px;
 }
 
-/* 🔥 ДОБАВЛЕНО КРАСИВОЕ ОФОРМЛЕНИЕ */
 #sendChatBtn {
     width: 100%;
     padding: 12px;
@@ -77,12 +71,6 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
     color: white;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.2s;
-}
-
-#sendChatBtn:hover {
-    transform: scale(1.02);
-    opacity: 0.9;
 }
 
 #chatInput {
@@ -93,12 +81,29 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
     border-radius: 10px;
     border: 1px solid #ddd;
 }
+
+/* ===== DM ===== */
+#dmBox, #dmChat {
+    display: none;
+}
+
+.userItem {
+    padding: 10px;
+    background: #f3f3f3;
+    margin: 5px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.userItem:hover {
+    background: #e8e8e8;
+}
 </style>
 </head>
 
 <body>
 
-<!-- АККАУНТЫ -->
+<!-- ACCOUNTS -->
 <div class="container">
     <div id="accountBar"></div>
 </div>
@@ -123,18 +128,35 @@ button.react-btn { cursor: pointer; padding: 6px 14px; border-radius: 20px; bord
     <h3>Создать пост</h3>
     <input type="text" id="nameInput" readonly>
     <input type="text" id="contentInput" placeholder="Текст...">
-    <input type="text" id="imageUrlInput" placeholder="Ссылка на картинку (https://...)">
+    <input type="text" id="imageUrlInput" placeholder="Ссылка на картинку">
     <button id="mainBtn">Опубликовать</button>
 </div>
 
 <!-- CHAT -->
 <div id="chatBox" class="container" style="display:none;">
-    <h3>Чат</h3>
+    <h3>Общий чат</h3>
 
     <div id="chatMessages"></div>
 
     <input type="text" id="chatInput" placeholder="Сообщение...">
     <button id="sendChatBtn">Отправить</button>
+</div>
+
+<!-- DM USERS -->
+<div id="dmBox" class="container">
+    <h3>Личные сообщения</h3>
+    <div id="userList"></div>
+</div>
+
+<!-- DM CHAT -->
+<div id="dmChat" class="container">
+    <h3 id="dmTitle">Чат</h3>
+    <div id="dmMessages" style="height:200px;overflow-y:auto;border:1px solid #eee;padding:10px;border-radius:8px;"></div>
+
+    <input id="dmInput" placeholder="Сообщение...">
+    <button id="dmSend" style="width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#007bff,#00c6ff);color:white;">
+        Отправить
+    </button>
 </div>
 
 <!-- FEED -->
@@ -159,52 +181,21 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
-/* ===== ACCOUNTS ===== */
+/* ===== USERS ===== */
 let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
 let currentAccount = null;
 
-function renderAccounts() {
-    const bar = document.getElementById("accountBar");
-    bar.innerHTML = "";
+/* ===== DM ===== */
+const users = [
+{uid:"u1",name:"Али"},
+{uid:"u2",name:"Дана"},
+{uid:"u3",name:"Арман"}
+];
 
-    accounts.forEach(acc => {
-        const el = document.createElement("div");
-        el.className = "accountChip " + (acc.uid === currentAccount ? "active" : "");
-        el.innerText = acc.name;
-        el.onclick = () => switchAccount(acc.uid);
-        bar.appendChild(el);
-    });
-}
+let selectedUser = null;
+let dmChatId = null;
 
-function saveAccount(user) {
-    if (!accounts.find(a => a.uid === user.uid)) {
-        accounts.push({
-            uid: user.uid,
-            name: user.displayName,
-            photo: user.photoURL
-        });
-        localStorage.setItem("accounts", JSON.stringify(accounts));
-    }
-    renderAccounts();
-}
-
-function switchAccount(uid) {
-    const acc = accounts.find(a => a.uid === uid);
-    if (!acc) return;
-
-    currentAccount = uid;
-
-    document.getElementById("userName").innerText = acc.name;
-    document.getElementById("userPhoto").src = acc.photo;
-
-    document.getElementById("userInfo").style.display = "flex";
-    document.getElementById("messageForm").style.display = "block";
-    document.getElementById("chatBox").style.display = "block";
-
-    renderAccounts();
-}
-
-/* AUTH */
+/* ===== AUTH ===== */
 document.getElementById('loginBtn').onclick =
 () => signInWithPopup(auth, provider);
 
@@ -213,27 +204,42 @@ document.getElementById('logoutBtn').onclick =
 
 onAuthStateChanged(auth, (user) => {
 if (user) {
-    saveAccount(user);
+    if(!accounts.find(a=>a.uid===user.uid)){
+        accounts.push({
+            uid:user.uid,
+            name:user.displayName,
+            photo:user.photoURL
+        });
+        localStorage.setItem("accounts",JSON.stringify(accounts));
+    }
+
     currentAccount = user.uid;
-    switchAccount(user.uid);
+
+    const acc = accounts.find(a=>a.uid===user.uid);
+
+    document.getElementById("userName").innerText = acc.name;
+    document.getElementById("userPhoto").src = acc.photo;
+
+    document.getElementById("userInfo").style.display="flex";
+    document.getElementById("messageForm").style.display="block";
+    document.getElementById("chatBox").style.display="block";
+
+    loadUsers();
 }
 });
 
-/* POST */
+/* ===== POST ===== */
 document.getElementById('mainBtn').onclick = async () => {
 await addDoc(collection(db,"requests"),{
-name: accounts.find(a => a.uid === currentAccount).name,
+name: accounts.find(a=>a.uid===currentAccount).name,
 text: document.getElementById('contentInput').value,
 imageUrl: document.getElementById('imageUrlInput').value,
-reactions: {like:0,fire:0,laugh:0},
-timestamp: serverTimestamp()
+reactions:{like:0,fire:0,laugh:0},
+timestamp:serverTimestamp()
 });
-
-document.getElementById('contentInput').value="";
-document.getElementById('imageUrlInput').value="";
 };
 
-/* FEED */
+/* ===== FEED ===== */
 const q = query(collection(db,"requests"),orderBy("timestamp","desc"));
 
 onSnapshot(q,(snap)=>{
@@ -243,64 +249,101 @@ feed.innerHTML="";
 snap.forEach(d=>{
 const data=d.data();
 
-feed.innerHTML += `
+feed.innerHTML+=`
 <div class="post">
-<span class="time">${data.timestamp?.toDate().toLocaleString() || ""}</span>
-
 <b>${data.name}</b>
-<p>${data.text || ""}</p>
-
-${data.imageUrl ? `<img src="${data.imageUrl}">` : ""}
-
-<div class="actions">
-<button class="react-btn" onclick="react('${d.id}','like')">👍 ${data.reactions?.like||0}</button>
-<button class="react-btn" onclick="react('${d.id}','fire')">🔥 ${data.reactions?.fire||0}</button>
-<button class="react-btn" onclick="react('${d.id}','laugh')">😂 ${data.reactions?.laugh||0}</button>
-<button class="del-btn" onclick="deletePost('${d.id}')">Удалить</button>
-</div>
+<p>${data.text||""}</p>
+${data.imageUrl?`<img src="${data.imageUrl}">`:""}
 </div>`;
 });
 });
 
-/* REACTIONS */
-window.react = async (id,type)=>{
-await updateDoc(doc(db,"requests",id),{
-[`reactions.${type}`]:increment(1)
-});
-};
-
-window.deletePost = async (id)=>{
-await deleteDoc(doc(db,"requests",id));
-};
-
 /* ===== CHAT ===== */
-import { collection as c2, addDoc as add2, onSnapshot as snap2, query as q2, orderBy as o2 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-const chatRef = c2(db,"chat");
-const chatQ = q2(chatRef,o2("timestamp"));
-
-onSnapshot(chatQ,(snap)=>{
-const box=document.getElementById("chatMessages");
-box.innerHTML="";
-
-snap.forEach(d=>{
-const data=d.data();
-box.innerHTML += `<div><b>${data.name}:</b> ${data.text}</div>`;
-});
-});
+const chatRef = collection(db,"chat");
 
 document.getElementById("sendChatBtn").onclick = async ()=>{
 const text=document.getElementById("chatInput").value;
 if(!text) return;
 
-await add2(chatRef,{
+await addDoc(chatRef,{
 name: accounts.find(a=>a.uid===currentAccount).name,
-text:text,
-timestamp: serverTimestamp()
+text,
+timestamp:serverTimestamp()
+});
+};
+
+onSnapshot(query(chatRef,orderBy("timestamp")),(snap)=>{
+const box=document.getElementById("chatMessages");
+box.innerHTML="";
+snap.forEach(d=>{
+box.innerHTML+=`<div><b>${d.data().name}:</b> ${d.data().text}</div>`;
+});
 });
 
-document.getElementById("chatInput").value="";
+/* ===== DM SYSTEM ===== */
+function loadUsers(){
+const box=document.getElementById("userList");
+box.innerHTML="";
+
+users.forEach(u=>{
+const div=document.createElement("div");
+div.className="userItem";
+div.innerText=u.name;
+
+div.onclick=()=>{
+openDM(u);
 };
+
+box.appendChild(div);
+});
+}
+
+function getDMId(a,b){
+return [a,b].sort().join("_");
+}
+
+function openDM(user){
+selectedUser=user;
+dmChatId=getDMId(currentAccount,user.uid);
+
+document.getElementById("dmChat").style.display="block";
+document.getElementById("dmTitle").innerText="Чат с "+user.name;
+
+listenDM();
+}
+
+document.getElementById("dmSend").onclick = async ()=>{
+const text=document.getElementById("dmInput").value;
+if(!text) return;
+
+await addDoc(collection(db,"conversations",dmChatId,"messages"),{
+from:currentAccount,
+to:selectedUser.uid,
+text,
+timestamp:serverTimestamp()
+});
+
+document.getElementById("dmInput").value="";
+};
+
+function listenDM(){
+const q=query(
+collection(db,"conversations",dmChatId,"messages"),
+orderBy("timestamp")
+);
+
+onSnapshot(q,(snap)=>{
+const box=document.getElementById("dmMessages");
+box.innerHTML="";
+
+snap.forEach(d=>{
+const m=d.data();
+
+box.innerHTML+=`
+<div><b>${m.from===currentAccount?"Вы":selectedUser.name}:</b> ${m.text}</div>`;
+});
+});
+}
 
 </script>
 
