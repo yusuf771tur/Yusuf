@@ -1,386 +1,49 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YusufCHAT — Premium Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #007bff;
-            --primary-hover: #0056b3;
-            --bg: #f4f7f9;
-            --card: #ffffff;
-            --text-main: #1a1d21;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius: 20px;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Header */
-        .top-nav {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 12px 0;
-            display: flex;
-            justify-content: center;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .nav-content {
-            width: 100%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 24px;
-            box-sizing: border-box;
-        }
-
-        .logo {
-            font-weight: 800;
-            font-size: 22px;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-
-        /* Grid System */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 300px 1fr 340px;
-            gap: 24px;
-            width: 100%;
-            max-width: 1200px;
-            padding: 24px;
-            box-sizing: border-box;
-            align-items: start;
-        }
-
-        .container {
-            background: var(--card);
-            padding: 24px;
-            border-radius: var(--radius);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border);
-        }
-
-        /* Profile & Sidebar */
-        .user-card { text-align: center; }
-        .user-avatar { 
-            width: 80px; height: 80px; 
-            border-radius: 50%; 
-            border: 4px solid var(--bg);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            object-fit: cover;
-        }
-        
-        .section-title {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* User List */
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 4px;
-        }
-        .user-item:hover { background: var(--bg); }
-        .user-item.active { background: #eef6ff; color: var(--primary); font-weight: 600; }
-        .user-item img { width: 32px; height: 32px; border-radius: 50%; }
-
-        /* Feed & Posts */
-        .post { 
-            background: var(--card); 
-            padding: 20px; 
-            border-radius: var(--radius); 
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-        .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .author-name { font-weight: 600; font-size: 15px; }
-        .post-time { font-size: 12px; color: var(--text-muted); }
-        .post-content { line-height: 1.6; font-size: 15px; margin-bottom: 12px; }
-        .post img { width: 100%; border-radius: 14px; margin-top: 10px; display: block; }
-
-        /* Reactions */
-        .reactions { display: flex; gap: 8px; margin-top: 16px; }
-        .react-btn { 
-            border: 1px solid var(--border); 
-            background: #f8fafc; 
-            padding: 8px 16px; 
-            border-radius: 100px; 
-            cursor: pointer; 
-            font-size: 14px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .react-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
-
-        /* Chat */
-        #chatMessages {
-            height: 400px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px;
-            background: #fdfdfd;
-            border-radius: 14px;
-            border: 1px solid #f1f5f9;
-            margin-bottom: 16px;
-        }
-        .msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; font-size: 14px; position: relative; }
-        .msg-me { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-them { background: #f1f5f9; color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
-
-        /* Inputs */
-        input {
-            width: 100%; padding: 12px 16px; margin: 8px 0;
-            border-radius: 12px; border: 1px solid var(--border); 
-            background: #f8fafc; font-family: inherit; transition: 0.2s;
-        }
-        input:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(0,123,255,0.1); }
-        
-        .btn-primary { 
-            background: var(--primary); color: white; border: none; 
-            padding: 12px; border-radius: 12px; font-weight: 600; 
-            cursor: pointer; transition: all 0.2s; width: 100%;
-        }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,123,255,0.2); }
-
-        @media (max-width: 1100px) {
-            .main-layout { grid-template-columns: 1fr; max-width: 600px; }
-            .sidebar, .chat-sidebar { width: 100%; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="top-nav">
-    <div class="nav-content">
-        <div class="logo">CloudApp</div>
-        <div id="authBox">
-            <button id="loginBtn" class="btn-primary" style="width: auto; padding: 8px 24px;">Войти через Google</button>
-            <div id="userInfo" style="display:none; align-items: center; gap: 16px;">
-                <span id="navName" style="font-weight: 500; font-size: 14px;"></span>
-                <button id="logoutBtn" style="background:none; border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px;">Выйти</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="main-layout">
-    <div class="sidebar">
-        <div class="container user-card" id="myProfile" style="display:none; margin-bottom: 24px;">
-            <img id="userPhoto" class="user-avatar" src="">
-            <h3 id="userName" style="margin: 16px 0 4px; font-size: 18px;"></h3>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Online</p>
-        </div>
-        
-        <div class="container">
-            <div class="section-title">💬 Собеседники</div>
-            <div id="userList">Загрузка...</div>
-        </div>
-    </div>
-
-    <div class="feed-container">
-        <div id="postForm" class="container" style="display:none; margin-bottom: 24px;">
-            <div class="section-title">✨ Создать запись</div>
-            <input type="text" id="contentInput" placeholder="Что у вас нового?">
-            <input type="text" id="imageUrlInput" placeholder="Ссылка на фото (URL)">
-            <button id="mainBtn" class="btn-primary">Опубликовать</button>
-        </div>
-        <div id="feed"></div>
-    </div>
-
-    <div class="chat-sidebar">
-        <div id="chatBox" class="container" style="display:none; position: sticky; top: 84px;">
-            <div class="section-title" id="chatHeader">Выберите чат</div>
-            <div id="chatMessages"></div>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="chatInput" placeholder="Сообщение..." style="margin: 0;">
-                <button id="sendChatBtn" class="btn-primary" style="width: 50px; padding: 0;">🚀</button>
-            </div>
-        </div>
-        <div id="chatPlaceholder" class="container" style="text-align: center; color: var(--text-muted); font-size: 14px;">
-            Нажмите на пользователя слева, чтобы начать переписку
-        </div>
-    </div>
-</div>
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
 
-// Твой обновленный конфиг
-const firebaseConfig = {
-    apiKey: "AIzaSyDZcurSOkEfsL4gqdGAgVE9Kcxuw9YN2xs",
-    authDomain: "yusuf-5c586.firebaseapp.com",
-    projectId: "yusuf-5c586",
-    storageBucket: "yusuf-5c586.firebasestorage.app",
-    messagingSenderId: "772209549280",
-    appId: "1:772209549280:web:003704162681f805e15585",
-    measurementId: "G-QLK34HJGCE"
+const URL = 'https://supabase.com/dashboard/project/qbykreduhwmlriyuhnxs';
+const KEY = 'sb_publishable_wqD-d_AgZ1HeC3bWbtGAWw_plolhv3w';
+const supabase = createClient(URL, KEY);
+
+const MY_ID = '3eec3e00-dffc-4c99-b780-4401ac78e66c';
+
+window.changeStatus = async (text, color) => {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ status: text, color: color })
+    .eq('id', MY_ID);
+
+  if (error) {
+    alert("Ошибка! Проверьте RLS политики в Supabase.");
+    console.error(error);
+  } else {
+    fetchGroup();
+  }
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+async function fetchGroup() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('username', { ascending: true });
 
-let currentUID = null;
-let activeChatUID = null;
-let chatListener = null;
+  if (error) return console.error(error);
 
-const getChatId = (u1, u2) => [u1, u2].sort().join("_");
+  const list = document.getElementById('groupList');
+  list.innerHTML = data.map(user => `
+    <div class="user-item">
+      <div class="status-dot" style="background: ${user.color || '#ccc'}"></div>
+      <div style="flex-grow: 1;">
+        <strong>${user.username}</strong><br>
+        <small style="color: #666;">${user.status || 'Статус не задан'}</small>
+      </div>
+    </div>
+  `).join('');
 
-const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: "select_account" });
-
-document.getElementById("loginBtn").onclick = () => signInWithPopup(auth, provider);
-document.getElementById("logoutBtn").onclick = () => signOut(auth).then(() => location.reload());
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUID = user.uid;
-        await setDoc(doc(db, "users", user.uid), {
-            uid: user.uid,
-            name: user.displayName,
-            photo: user.photoURL
-        }, { merge: true });
-
-        document.getElementById("loginBtn").style.display = "none";
-        document.getElementById("userInfo").style.display = "flex";
-        document.getElementById("navName").innerText = user.displayName;
-        document.getElementById("myProfile").style.display = "block";
-        document.getElementById("userName").innerText = user.displayName;
-        document.getElementById("userPhoto").src = user.photoURL;
-        document.getElementById("postForm").style.display = "block";
-        
-        listenUsers();
-    }
-});
-
-function listenUsers() {
-    onSnapshot(collection(db, "users"), (snap) => {
-        const list = document.getElementById("userList");
-        list.innerHTML = "";
-        snap.forEach(uDoc => {
-            const user = uDoc.data();
-            if (user.uid === currentUID) return;
-            const el = document.createElement("div");
-            el.className = `user-item ${activeChatUID === user.uid ? 'active' : ''}`;
-            el.innerHTML = `<img src="${user.photo}"> <span>${user.name}</span>`;
-            el.onclick = () => startChat(user);
-            list.appendChild(el);
-        });
-    });
+  const me = data.find(u => u.id === MY_ID);
+  if (me) document.getElementById('myInfo').innerText = `Вы вошли как: ${me.username}`;
 }
 
-function startChat(targetUser) {
-    activeChatUID = targetUser.uid;
-    document.getElementById("chatPlaceholder").style.display = "none";
-    document.getElementById("chatBox").style.display = "block";
-    document.getElementById("chatHeader").innerText = `Чат с ${targetUser.name}`;
-    
-    if (chatListener) chatListener();
-    const chatId = getChatId(currentUID, targetUser.uid);
-    const q = query(collection(db, "conversations", chatId, "messages"), orderBy("timestamp"));
-    
-    chatListener = onSnapshot(q, (snap) => {
-        const box = document.getElementById("chatMessages");
-        box.innerHTML = "";
-        snap.forEach(m => {
-            const d = m.data();
-            const isMe = d.from === currentUID;
-            box.innerHTML += `<div class="msg ${isMe ? 'msg-me' : 'msg-them'}">${d.text}</div>`;
-        });
-        box.scrollTop = box.scrollHeight;
-    });
-    listenUsers();
-}
-
-document.getElementById("sendChatBtn").onclick = async () => {
-    const text = document.getElementById("chatInput").value;
-    if (!text || !activeChatUID) return;
-    await addDoc(collection(db, "conversations", getChatId(currentUID, activeChatUID), "messages"), {
-        from: currentUID,
-        name: auth.currentUser.displayName,
-        text: text,
-        timestamp: serverTimestamp()
-    });
-    document.getElementById("chatInput").value = "";
-};
-
-document.getElementById("mainBtn").onclick = async () => {
-    const text = document.getElementById("contentInput").value;
-    const img = document.getElementById("imageUrlInput").value;
-    if (!text && !img) return;
-    await addDoc(collection(db, "requests"), {
-        name: auth.currentUser.displayName,
-        text: text || "",
-        imageUrl: img || "",
-        reactions: { like: 0, fire: 0, laugh: 0 },
-        timestamp: serverTimestamp()
-    });
-    document.getElementById("contentInput").value = "";
-    document.getElementById("imageUrlInput").value = "";
-};
-
-onSnapshot(query(collection(db, "requests"), orderBy("timestamp", "desc")), (snap) => {
-    const feed = document.getElementById("feed");
-    feed.innerHTML = "";
-    snap.forEach(d => {
-        const p = d.data();
-        const id = d.id;
-        feed.innerHTML += `
-            <div class="post">
-                <div class="post-header">
-                    <span class="author-name">${p.name}</span>
-                    <span class="post-time">${p.timestamp?.toDate().toLocaleTimeString() || ''}</span>
-                </div>
-                ${p.text ? `<div class="post-content">${p.text}</div>` : ''}
-                ${p.imageUrl ? `<img src="${p.imageUrl}">` : ''}
-                <div class="reactions">
-                    <button class="react-btn" onclick="window.react('${id}','like')"><span>👍</span> <b>${p.reactions?.like || 0}</b></button>
-                    <button class="react-btn" onclick="window.react('${id}','fire')"><span>🔥</span> <b>${p.reactions?.fire || 0}</b></button>
-                    <button class="react-btn" onclick="window.react('${id}','laugh')"><span>😂</span> <b>${p.reactions?.laugh || 0}</b></button>
-                </div>
-            </div>`;
-    });
-});
-
-window.react = async (id, type) => {
-    const docRef = doc(db, "requests", id);
-    await updateDoc(docRef, { [`reactions.${type}`]: increment(1) });
-};
+fetchGroup();
+setInterval(fetchGroup, 3000);
 </script>
-</body>
-</html>
