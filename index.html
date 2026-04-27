@@ -1,49 +1,196 @@
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль - Монитор</title>
+    <style>
+        /* Общие стили страницы */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 50px;
+        }
 
-const URL = 'https://qbykreduhwmlriyuhnxs.supabase.co';
-const KEY = 'sb_publishable_wqD-d_AgZ1HeC3bWbtGAWw_plolhv3w';
-const supabase = createClient(URL, KEY);
+        .container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-const MY_ID = '3eec3e00-dffc-4c99-b780-4401ac78e66c';
+        /* Стиль карточек */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
 
-window.changeStatus = async (text, color) => {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ status: text, color: color })
-    .eq('id', MY_ID);
+        h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+        }
 
-  if (error) {
-    alert("Ошибка! Проверьте RLS политики в Supabase.");
-    console.error(error);
-  } else {
-    fetchGroup();
-  }
-};
+        .info-text {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
 
-async function fetchGroup() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .order('username', { ascending: true });
+        /* Сетка кнопок */
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
 
-  if (error) return console.error(error);
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.1s ease;
+        }
 
-  const list = document.getElementById('groupList');
-  list.innerHTML = data.map(user => `
-    <div class="user-item">
-      <div class="status-dot" style="background: ${user.color || '#ccc'}"></div>
-      <div style="flex-grow: 1;">
-        <strong>${user.username}</strong><br>
-        <small style="color: #666;">${user.status || 'Статус не задан'}</small>
-      </div>
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Цвета кнопок как на фото */
+        .btn-green  { background-color: #28a745; }
+        .btn-yellow { background-color: #ffc107; color: #000; }
+        .btn-blue   { background-color: #17a2b8; }
+        .btn-gray   { background-color: #6c757d; }
+
+        /* Список группы */
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .user-info strong {
+            display: block;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .user-info small {
+            color: #777;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>Мой профиль</h2>
+        <div id="myInfo" class="info-text">Загрузка данных...</div>
+        
+        <div class="button-grid">
+            <button onclick="changeStatus('Учусь', '#28a745')" class="btn btn-green">📚 Учусь</button>
+            <button onclick="changeStatus('Кофе-брейк', '#ffc107')" class="btn btn-yellow">☕ Кофе</button>
+            <button onclick="changeStatus('В игре', '#17a2b8')" class="btn btn-blue">🎮 В игре</button>
+            <button onclick="changeStatus('Дома', '#6c757d')" class="btn btn-gray">🏠 Дома</button>
+        </div>
     </div>
-  `).join('');
 
-  const me = data.find(u => u.id === MY_ID);
-  if (me) document.getElementById('myInfo').innerText = `Вы вошли как: ${me.username}`;
-}
+    <div class="card">
+        <h2>Монитор группы</h2>
+        <div id="groupList">
+            </div>
+    </div>
+</div>
 
-fetchGroup();
-setInterval(fetchGroup, 3000);
+<script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
+
+    const URL = 'https://qbykreduhwmlriyuhnxs.supabase.co';
+    const KEY = 'sb_publishable_wqD-d_AgZ1HeC3bWbtGAWw_plolhv3w';
+    const supabase = createClient(URL, KEY);
+
+    // Твой ID
+    const MY_ID = '3eec3e00-dffc-4c99-b780-4401ac78e66c';
+
+    // Функция смены статуса
+    window.changeStatus = async (text, color) => {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ status: text, color: color })
+            .eq('id', MY_ID);
+
+        if (error) {
+            alert("Ошибка обновления! Проверьте RLS в Supabase.");
+            console.error(error);
+        } else {
+            fetchGroup(); // Сразу обновляем список
+        }
+    };
+
+    // Функция получения списка группы
+    async function fetchGroup() {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .order('username', { ascending: true });
+
+        if (error) {
+            console.error("Ошибка загрузки:", error);
+            return;
+        }
+
+        const list = document.getElementById('groupList');
+        list.innerHTML = data.map(user => `
+            <div class="user-item">
+                <div class="status-dot" style="background: ${user.color || '#ccc'}"></div>
+                <div class="user-info">
+                    <strong>${user.username}</strong>
+                    <small>${user.status || 'Статус не задан'}</small>
+                </div>
+            </div>
+        `).join('');
+
+        // Обновляем текст "Вы зашли как"
+        const me = data.find(u => u.id === MY_ID);
+        if (me) {
+            document.getElementById('myInfo').innerText = `Вы зашли как: ${me.username}`;
+        }
+    }
+
+    // Инициализация
+    fetchGroup();
+    // Обновление каждые 3 секунды для имитации реального времени
+    setInterval(fetchGroup, 3000);
 </script>
+
+</body>
+</html>
