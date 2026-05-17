@@ -41,7 +41,7 @@
             --table-header-bg: #1a1736;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.2s, border-color 0.2s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.2s, border-color 0.2s, color 0.2s; }
         body { background-color: var(--bg-light); color: var(--text-main); height: 100vh; overflow: hidden; }
         
         /* Экран входа */
@@ -99,8 +99,8 @@
         .data-table th { padding: 12px 16px; color: var(--text-muted); font-weight: 500; font-size: 13px; text-align: left; border-bottom: 1px solid var(--border-color); background-color: var(--table-header-bg); }
         .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
         .status { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; }
-        .status.active, .status.available { background-color: #dcfce7; color: #15803d; }
-        .status.new { background-color: #ffedd5; color: #c2410c; }
+        .status.active, .status.available, .status.доступа { background-color: #dcfce7; color: #15803d; }
+        .status.new, .status.новинка { background-color: #ffedd5; color: #c2410c; }
 
         /* Аналитика виджеты */
         .mini-widgets { display: flex; gap: 15px; }
@@ -122,15 +122,17 @@
         .bar.green { background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%); }
         .bar-label { font-size: 11px; color: var(--text-muted); }
 
-        /* Переключатель Dark Mode (Тоггл) */
-        .theme-switch-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        /* РЕАЛЬНЫЙ КРАСИВЫЙ ПОЛЗУНОК (ТОГГЛ) */
+        .theme-switch-container { display: flex; align-items: center; gap: 12px; }
+        .switch { position: relative; display: inline-block; width: 54px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary-purple); }
-        input:checked + .slider:before { transform: translateX(22px); }
-
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; }
+        .slider .fa-sun { color: #f59e0b; font-size: 12px; }
+        .slider .fa-moon { color: #94a3b8; font-size: 12px; }
+        input:checked + .slider { background-color: #4f46e5; }
+        input:checked + .slider:before { transform: translateX(26px); }
+        
         /* Стили для задач */
         .task-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
         .task-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--table-header-bg); border-radius: 8px; border: 1px solid var(--border-color); }
@@ -191,7 +193,7 @@
                             <h3>Задачи и Фокус на сегодня</h3>
                             <ul class="task-list">
                                 <li class="task-item"><input type="checkbox" checked> <span>Проверить новые заявки клиентов</span></li>
-                                <li class="task-item"><input type="checkbox"> <span>Подготовить financial отчеты за прошлый месяц</span></li>
+                                <li class="task-item"><input type="checkbox"> <span>Подготовить финансовые отчеты за прошлый месяц</span></li>
                                 <li class="task-item"><input type="checkbox"> <span>Обновить тарифную сетку в меню услуг</span></li>
                             </ul>
                         </div>
@@ -306,20 +308,26 @@
                 <section id="tab-settings" class="tab-content">
                     <div class="card" style="max-width: 600px;">
                         <h3>Кастомизация профиля и интерфейса</h3>
+                        
                         <div class="form-group" style="margin-top:20px;">
                             <label>Название вашей компании:</label>
                             <input type="text" id="settings-company" value="БизнесСпектр">
                         </div>
-                        <div class="form-group" style="margin-top:20px; justify-content: space-between;">
+                        
+                        <div class="form-group" style="margin-top:25px; justify-content: space-between;">
                             <label style="width: auto;">Режим отображения (Темная тема):</label>
-                            <div class="theme-switch-wrapper">
-                                <label class="switch" for="theme-toggle">
+                            <div class="theme-switch-container">
+                                <label class="switch">
                                     <input type="checkbox" id="theme-toggle">
-                                    <div class="slider"></div>
+                                    <div class="slider">
+                                        <i class="fa-solid fa-sun"></i>
+                                        <i class="fa-solid fa-moon"></i>
+                                    </div>
                                 </label>
                             </div>
                         </div>
-                        <button class="btn-primary" id="btn-save-settings" style="margin-top: 20px; width: 100%; justify-content: center;">Сохранить параметры</button>
+                        
+                        <button class="btn-primary" id="btn-save-settings" style="margin-top: 25px; width: 100%; justify-content: center;">Сохранить параметры</button>
                     </div>
                 </section>
 
@@ -359,7 +367,6 @@
                 document.getElementById('welcome-username').innerText = meta?.given_name || "Пользователь";
                 if (meta?.avatar_url) document.getElementById('user-avatar').src = meta.avatar_url;
                 
-                // Применяем сохраненное имя компании при входе
                 applySavedCompany();
                 
                 loadClients();
@@ -421,7 +428,7 @@
             list.forEach(s => {
                 const tr = document.createElement('tr');
                 const statusText = s.status === 'active' ? 'Доступна' : 'Новинка';
-                tr.innerHTML = `<td><strong>${s.title}</strong></td><td>${s.category || 'Общие'}</td><td>${parseInt(s.price).toLocaleString('ru-RU')} ₸</td><td><span class="status ${s.status}">${statusText}</span></td>`;
+                tr.innerHTML = `<td><strong>${s.title}</strong></td><td>${s.category || 'Общие'}</td><td>${parseInt(s.price).toLocaleString('ru-RU')} ₸</td><td><span class="status ${s.status.toLowerCase()}">${statusText}</span></td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -437,7 +444,7 @@
             loadServices();
         });
 
-        // Логика управления вкладками
+        // Управление вкладками
         function switchTab(tabId) {
             document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => {
@@ -481,10 +488,9 @@
         count.addEventListener('input', calc);
         document.getElementById('btn-calculate').addEventListener('click', calc);
 
-        // ================= ЧЕТКАЯ ЛОГИКА НАСТРОЕК (ТЕМА И НАЗВАНИЕ) =================
+        // ================= РАБОТА С НАСТРОЙКАМИ (ТЕМА И КОМПАНИЯ) =================
         const themeToggle = document.getElementById('theme-toggle');
         
-        // Функция проверки и применения сохраненной темы
         function applySavedTheme() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
@@ -496,7 +502,6 @@
             }
         }
 
-        // Функция проверки и применения сохраненного имени компании
         function applySavedCompany() {
             const savedCompany = localStorage.getItem('companyName');
             if (savedCompany) {
@@ -505,7 +510,6 @@
             }
         }
 
-        // Слушатель изменения чекбокса темы
         if (themeToggle) {
             themeToggle.addEventListener('change', (e) => {
                 if (e.target.checked) {
@@ -518,22 +522,19 @@
             });
         }
 
-        // Слушатель кнопки «Сохранить параметры»
         document.getElementById('btn-save-settings').addEventListener('click', () => {
             const companyName = document.getElementById('settings-company').value.trim();
             
             if (companyName) {
-                // Сохраняем в память браузера
                 localStorage.setItem('companyName', companyName);
-                // Сразу обновляем текст в сайдбаре
                 document.getElementById('sidebar-company-name').innerText = companyName;
-                alert('Настройки успешно применены и сохранены!');
+                alert('Параметры успешно сохранены в системе!');
             } else {
-                alert('Название компании не может быть пустым!');
+                alert('Пожалуйста, укажите корректное название компании.');
             }
         });
 
-        // Инициализация при первичной загрузке страницы
+        // Инициализация интерфейса
         applySavedTheme();
         applySavedCompany();
         checkSession();
