@@ -122,14 +122,17 @@
         .bar.green { background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%); }
         .bar-label { font-size: 11px; color: var(--text-muted); }
 
-        /* ИСПРАВЛЕННЫЙ ИДЕАЛЬНЫЙ ПОЛЗУНОК */
-        .theme-switch-container { display: flex; align-items: center; }
+        /* ИЗОЛИРОВАННЫЙ КОНТЕЙНЕР ДЛЯ СТРОКИ ТЕМЫ */
+        .theme-row { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 15px; gap: 10px; width: 100%; }
+        .theme-row .theme-label { width: 35%; font-size: 14px; color: var(--text-main); }
+        
+        /* ИСПРАВЛЕННЫЙ ТУМБЛЕР БЕЗ СЖАТИЯ */
         .switch { position: relative; display: inline-block; width: 54px; height: 28px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 7px; overflow: hidden; }
         .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; }
-        .slider .fa-sun { color: #f59e0b; font-size: 12px; z-index: 1; }
-        .slider .fa-moon { color: #94a3b8; font-size: 12px; z-index: 1; }
+        .slider .fa-sun { color: #f59e0b; font-size: 12px; z-index: 1; flex-shrink: 0; }
+        .slider .fa-moon { color: #94a3b8; font-size: 12px; z-index: 1; flex-shrink: 0; }
         input:checked + .slider { background-color: #4f46e5; }
         input:checked + .slider:before { transform: translateX(26px); }
         
@@ -314,17 +317,15 @@
                             <input type="text" id="settings-company" value="БизнесСпектр">
                         </div>
                         
-                        <div class="form-group" style="margin-top:25px; justify-content: space-between;">
-                            <label style="width: auto;">Режим отображения (Темная тема):</label>
-                            <div class="theme-switch-container">
-                                <label class="switch">
-                                    <input type="checkbox" id="theme-toggle">
-                                    <div class="slider">
-                                        <i class="fa-solid fa-sun"></i>
-                                        <i class="fa-solid fa-moon"></i>
-                                    </div>
-                                </label>
-                            </div>
+                        <div class="theme-row" style="margin-top:25px;">
+                            <div class="theme-label">Режим отображения:</div>
+                            <label class="switch">
+                                <input type="checkbox" id="theme-toggle">
+                                <div class="slider">
+                                    <i class="fa-solid fa-sun"></i>
+                                    <i class="fa-solid fa-moon"></i>
+                                </div>
+                            </label>
                         </div>
                         
                         <button class="btn-primary" id="btn-save-settings" style="margin-top: 25px; width: 100%; justify-content: center;">Сохранить параметры</button>
