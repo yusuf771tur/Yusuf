@@ -191,7 +191,7 @@
                             <h3>Задачи и Фокус на сегодня</h3>
                             <ul class="task-list">
                                 <li class="task-item"><input type="checkbox" checked> <span>Проверить новые заявки клиентов</span></li>
-                                <li class="task-item"><input type="checkbox"> <span>Подготовить финансовые отчеты за прошлый месяц</span></li>
+                                <li class="task-item"><input type="checkbox"> <span>Подготовить financial отчеты за прошлый месяц</span></li>
                                 <li class="task-item"><input type="checkbox"> <span>Обновить тарифную сетку в меню услуг</span></li>
                             </ul>
                         </div>
@@ -359,6 +359,9 @@
                 document.getElementById('welcome-username').innerText = meta?.given_name || "Пользователь";
                 if (meta?.avatar_url) document.getElementById('user-avatar').src = meta.avatar_url;
                 
+                // Применяем сохраненное имя компании при входе
+                applySavedCompany();
+                
                 loadClients();
                 loadServices();
                 switchTab('clients');
@@ -478,30 +481,61 @@
         count.addEventListener('input', calc);
         document.getElementById('btn-calculate').addEventListener('click', calc);
 
-        // Настройки и Переключатель Темной Темы
+        // ================= ЧЕТКАЯ ЛОГИКА НАСТРОЕК (ТЕМА И НАЗВАНИЕ) =================
         const themeToggle = document.getElementById('theme-toggle');
         
-        if(localStorage.getItem('theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            themeToggle.checked = true;
-        }
-
-        themeToggle.addEventListener('change', (e) => {
-            if(e.target.checked) {
+        // Функция проверки и применения сохраненной темы
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
+                if (themeToggle) themeToggle.checked = true;
             } else {
                 document.documentElement.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
+                if (themeToggle) themeToggle.checked = false;
+            }
+        }
+
+        // Функция проверки и применения сохраненного имени компании
+        function applySavedCompany() {
+            const savedCompany = localStorage.getItem('companyName');
+            if (savedCompany) {
+                document.getElementById('sidebar-company-name').innerText = savedCompany;
+                document.getElementById('settings-company').value = savedCompany;
+            }
+        }
+
+        // Слушатель изменения чекбокса темы
+        if (themeToggle) {
+            themeToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        }
+
+        // Слушатель кнопки «Сохранить параметры»
+        document.getElementById('btn-save-settings').addEventListener('click', () => {
+            const companyName = document.getElementById('settings-company').value.trim();
+            
+            if (companyName) {
+                // Сохраняем в память браузера
+                localStorage.setItem('companyName', companyName);
+                // Сразу обновляем текст в сайдбаре
+                document.getElementById('sidebar-company-name').innerText = companyName;
+                alert('Настройки успешно применены и сохранены!');
+            } else {
+                alert('Название компании не может быть пустым!');
             }
         });
 
-        document.getElementById('btn-save-settings').addEventListener('click', () => {
-            const companyName = document.getElementById('settings-company').value;
-            document.getElementById('sidebar-company-name').innerText = companyName;
-            alert('Изменения сохранены успешно!');
-        });
-
+        // Инициализация при первичной загрузке страницы
+        applySavedTheme();
+        applySavedCompany();
         checkSession();
     </script>
 </body>
