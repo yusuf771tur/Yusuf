@@ -374,6 +374,45 @@
             justify-content: center;
             font-size: 1.2rem;
         }
+                .top-student {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        
+        .top-student-name {
+            font-weight: bold;
+            color: #1a1a1a;
+        }
+        
+        .top-student-time {
+            color: #11998e;
+            font-weight: bold;
+        }
+        
+        .achievement-item {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .achievement-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .achievement-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
     </style>
 </head>
 <body>
@@ -406,6 +445,23 @@
             <h2>👥 Монитор группы <span id="usersCount" class="online-count">0</span></h2>
             <div id="groupList"></div>
         </div>
+
+        <div class="card">
+    <h2>🏆 Топ студентов</h2>
+
+    <div id="topStudents">
+        <div class="loading">Загрузка рейтинга...</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🎖️ Мои достижения</h2>
+
+    <div id="achievementsList">
+        <div class="loading">Загрузка достижений...</div>
+    </div>
+</div>
+
 
         <div class="card">
             <h2>💬 Общий чат</h2>
@@ -445,6 +501,8 @@
         let sessionSeconds = 0;
         let timerInterval = null;
         let isPaused = false;
+
+        let currentUserAchievements = [];
 
         // Получение текущего URL
         const getCurrentUrl = () => {
@@ -635,6 +693,10 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        function hasAchievement(name) {
+    return currentUserAchievements.includes(name);
+    }
 
         // ========== ЗАГРУЗКА СПИСКА ==========
         async function fetchGroup() {
