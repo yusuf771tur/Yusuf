@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учебная платформа | Заметки + Опросы</title>
+    <title>Учебная платформа</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -62,12 +62,6 @@
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            transition: 0.2s;
-        }
-
-        .btn-google:hover {
-            background: #3367d6;
-            transform: translateY(-1px);
         }
 
         .profile-header {
@@ -154,11 +148,6 @@
             padding: 8px 20px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .btn:active {
-            transform: scale(0.95);
         }
 
         .btn-start { background: #10b981; color: white; }
@@ -168,7 +157,7 @@
         .btn-danger { background: #ef4444; color: white; }
         .btn-sm { padding: 4px 12px; font-size: 0.8rem; }
 
-        .user-item {
+        .user-item, .note-item, .poll-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -266,6 +255,7 @@
             border-radius: 16px;
             padding: 12px;
             text-align: center;
+            cursor: pointer;
         }
 
         .achievement-card.unlocked {
@@ -283,6 +273,17 @@
             margin-bottom: 8px;
         }
 
+        .achievement-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+
         .notification {
             position: fixed;
             top: 20px;
@@ -293,18 +294,11 @@
             border-radius: 12px;
             animation: slideIn 0.3s ease-out;
             z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         .hidden {
@@ -315,15 +309,6 @@
             text-align: center;
             padding: 40px;
             color: #64748b;
-        }
-
-        .error-message {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 16px;
-            border-radius: 12px;
-            margin: 16px;
-            text-align: center;
         }
 
         .stats-grid {
@@ -352,11 +337,72 @@
             margin-top: 4px;
         }
 
-        .note-item, .poll-item {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            margin-bottom: 8px;
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
             border-radius: 12px;
+        }
+
+        .vote-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .poll-option {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            border-radius: 3px;
+            transition: width 0.3s;
         }
     </style>
 </head>
@@ -364,9 +410,7 @@
 <div class="container">
     <div class="card full-width" id="authCard">
         <h1>📚 Учебная платформа</h1>
-        <div id="authContent">
-            <div class="loading">⏳ Загрузка...</div>
-        </div>
+        <div id="authContent"><div class="loading">⏳ Загрузка...</div></div>
     </div>
 
     <div class="card full-width hidden" id="appCard">
@@ -392,22 +436,10 @@
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="sessionCount">0</div>
-                <div class="stat-label">Сессий</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="messageCount">0</div>
-                <div class="stat-label">Сообщений</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="achievementCount">0</div>
-                <div class="stat-label">Достижений</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="rankPlace">#0</div>
-                <div class="stat-label">Место в рейтинге</div>
-            </div>
+            <div class="stat-card"><div class="stat-value" id="sessionCount">0</div><div class="stat-label">Сессий</div></div>
+            <div class="stat-card"><div class="stat-value" id="messageCount">0</div><div class="stat-label">Сообщений</div></div>
+            <div class="stat-card"><div class="stat-value" id="achievementCount">0</div><div class="stat-label">Достижений</div></div>
+            <div class="stat-card"><div class="stat-value" id="rankPlace">#0</div><div class="stat-label">Место в рейтинге</div></div>
         </div>
     </div>
 
@@ -442,16 +474,34 @@
         <h2>💬 Общий чат</h2>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Напишите сообщение..." maxlength="300">
+            <input type="text" id="chatInput" placeholder="Напишите сообщение...">
             <button class="send-btn" id="sendBtn">Отправить</button>
         </div>
     </div>
 </div>
 
+<div id="noteModal" class="modal">
+    <div class="modal-content">
+        <h3>✏️ Новая заметка</h3>
+        <div class="form-group"><label>Заголовок</label><input type="text" id="noteTitle"></div>
+        <div class="form-group"><label>Содержание</label><textarea id="noteContent" rows="4"></textarea></div>
+        <button class="btn btn-primary btn-sm" id="saveNoteBtn">Сохранить</button>
+        <button class="btn btn-danger btn-sm" id="closeNoteModal">Отмена</button>
+    </div>
+</div>
+
+<div id="pollModal" class="modal">
+    <div class="modal-content">
+        <h3>📊 Создать опрос</h3>
+        <div class="form-group"><label>Вопрос</label><input type="text" id="pollQuestion"></div>
+        <div class="form-group"><label>Варианты (через запятую)</label><input type="text" id="pollOptions" placeholder="Вариант 1, Вариант 2, Вариант 3"></div>
+        <button class="btn btn-primary btn-sm" id="savePollBtn">Создать</button>
+        <button class="btn btn-danger btn-sm" id="closePollModal">Отмена</button>
+    </div>
+</div>
+
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    
-    console.log('🚀 Приложение загружается...');
     
     const SUPABASE_URL = 'https://qbykreduhwmlriyuhnxs.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFieWtyZWR1aHdtbHJpeXVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODQ1MzcsImV4cCI6MjA5MjI2MDUzN30.hT3f3TIZfiZ044tmaS899sUS-2O9MspbAFvldG8e-hQ';
@@ -459,116 +509,65 @@
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     
     let currentUser = null;
-    let timerInterval = null;
-    let totalSeconds = 0;
     let sessionStartTime = null;
+    let totalSeconds = 0;
+    let timerInterval = null;
     let currentSessionCount = 0;
     
-    const achievements = {
-        early_bird: { title: '🌅 Ранняя пташка', desc: 'Зашел до 8:00' },
-        marathon: { title: '🏃 Марафонец', desc: 'Учился 2+ часа' },
-        activist: { title: '💬 Активист', desc: '20 сообщений' },
-        first_step: { title: '🎯 Первый шаг', desc: 'Первая сессия' }
+    const ACHIEVEMENTS = {
+        early_bird: { id: 'early_bird', title: '🌅 Ранняя пташка', desc: 'Зашел на платформу до 8:00', icon: '🌅' },
+        marathon: { id: 'marathon', title: '🏃 Марафонец', desc: 'Проучился более 2 часов за раз', icon: '🏃' },
+        activist: { id: 'activist', title: '💬 Активист', desc: 'Написал 20 сообщений', icon: '💬' },
+        first_step: { id: 'first_step', title: '🎯 Первый шаг', desc: 'Прошел первую сессию', icon: '🎯' },
+        note_master: { id: 'note_master', title: '📝 Мастер заметок', desc: 'Создал 5 заметок', icon: '📝' },
+        poll_creator: { id: 'poll_creator', title: '🎯 Организатор', desc: 'Создал 3 опроса', icon: '🎯' }
     };
     
     function showNotification(msg, title = 'Уведомление') {
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.innerHTML = `<strong>${title}</strong><br>${msg}`;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
+        const notif = document.createElement('div');
+        notif.className = 'notification';
+        notif.innerHTML = `<strong>${title}</strong><br>${msg}`;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+    
+    async function unlockAchievement(achievementId) {
+        if (!currentUser) return false;
+        
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('achievements')
+            .eq('id', currentUser.id)
+            .single();
+        
+        let achievements = profile?.achievements || [];
+        if (achievements.includes(achievementId)) return false;
+        
+        achievements.push(achievementId);
+        
+        const { error } = await supabase
+            .from('profiles')
+            .update({ achievements: achievements })
+            .eq('id', currentUser.id);
+        
+        if (!error) {
+            const ach = ACHIEVEMENTS[achievementId];
+            showNotification(`${ach.title}: ${ach.desc}`, '🎉 НОВОЕ ДОСТИЖЕНИЕ!');
+            await loadAchievements();
+            await updateStats();
+            return true;
+        }
+        return false;
     }
     
     function formatTime(sec) {
-        const h = Math.floor(sec / 3600);
-        const m = Math.floor((sec % 3600) / 60);
-        const s = sec % 60;
-        return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        return `${Math.floor(sec/3600).toString().padStart(2,'0')}:${Math.floor((sec%3600)/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`;
     }
     
     function formatTotal(sec) {
         const h = Math.floor(sec / 3600);
         const m = Math.floor((sec % 3600) / 60);
         return h > 0 ? `${h}ч ${m}мин` : `${m} мин`;
-    }
-    
-    async function init() {
-        console.log('🔐 Проверяем авторизацию...');
-        
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (error) {
-            console.error('Ошибка получения пользователя:', error);
-            showAuthForm();
-            return;
-        }
-        
-        if (user) {
-            console.log('✅ Пользователь найден:', user.email);
-            currentUser = user;
-            await loadUserProfile();
-            showApp();
-        } else {
-            console.log('👤 Пользователь не авторизован');
-            showAuthForm();
-        }
-    }
-    
-    async function loadUserProfile() {
-        console.log('📥 Загружаем профиль...');
-        
-        let { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-        
-        if (error && error.code === 'PGRST116') {
-            console.log('📝 Профиль не найден, создаем...');
-            const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert([{
-                    id: currentUser.id,
-                    username: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
-                    avatar_url: currentUser.user_metadata?.avatar_url,
-                    status: '🏠 Дома',
-                    total_study_seconds: 0,
-                    message_count: 0,
-                    achievements: []
-                }])
-                .select()
-                .single();
-            
-            if (insertError) {
-                console.error('❌ Ошибка создания профиля:', insertError);
-                showNotification('Ошибка создания профиля', '⚠️');
-                return;
-            }
-            profile = newProfile;
-        } else if (error) {
-            console.error('❌ Ошибка загрузки профиля:', error);
-            showNotification('Ошибка загрузки профиля', '⚠️');
-            return;
-        }
-        
-        if (profile) {
-            totalSeconds = profile.total_study_seconds || 0;
-            document.getElementById('sessionCount').textContent = currentSessionCount;
-            document.getElementById('totalStudyDisplay').textContent = `📚 Всего учёбы: ${formatTotal(totalSeconds)}`;
-            document.getElementById('userName').textContent = profile.username || 'Студент';
-            document.getElementById('userEmail').textContent = currentUser.email;
-            document.getElementById('userAvatar').textContent = (profile.username?.[0] || currentUser.email[0]).toUpperCase();
-            
-            await loadAchievements();
-            await loadLeaderboard();
-            await loadNotes();
-            await loadPolls();
-            await loadMessages();
-            await loadGroupList();
-            
-            setInterval(() => loadGroupList(), 10000);
-            setInterval(() => loadLeaderboard(), 15000);
-        }
     }
     
     async function loadAchievements() {
@@ -580,38 +579,16 @@
         
         const userAchievements = profile?.achievements || [];
         const container = document.getElementById('achievementsList');
-        container.innerHTML = Object.entries(achievements).map(([id, ach]) => `
-            <div class="achievement-card ${userAchievements.includes(id) ? 'unlocked' : 'locked'}">
-                <div class="achievement-icon">${ach.title.split(' ')[0]}</div>
+        
+        container.innerHTML = Object.values(ACHIEVEMENTS).map(ach => `
+            <div class="achievement-card ${userAchievements.includes(ach.id) ? 'unlocked' : 'locked'}">
+                <div class="achievement-icon">${ach.icon}</div>
                 <div class="achievement-title">${ach.title}</div>
                 <div class="achievement-desc">${ach.desc}</div>
             </div>
         `).join('');
-        document.getElementById('achievementCount').textContent = `${userAchievements.length}/${Object.keys(achievements).length}`;
-    }
-    
-    async function loadLeaderboard() {
-        const { data: topStudents } = await supabase
-            .from('profiles')
-            .select('username, total_study_seconds')
-            .order('total_study_seconds', { ascending: false })
-            .limit(10);
         
-        if (topStudents) {
-            const container = document.getElementById('leaderboardList');
-            container.innerHTML = topStudents.map((s, i) => {
-                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '👤';
-                return `
-                    <div class="leaderboard-item">
-                        <div class="user-left">
-                            <span class="medal">${medal}</span>
-                            <strong>${s.username || 'Студент'}</strong>
-                        </div>
-                        <div>${formatTotal(s.total_study_seconds || 0)}</div>
-                    </div>
-                `;
-            }).join('');
-        }
+        document.getElementById('achievementCount').textContent = `${userAchievements.length}/${Object.keys(ACHIEVEMENTS).length}`;
     }
     
     async function loadNotes() {
@@ -622,46 +599,151 @@
             .order('created_at', { ascending: false });
         
         const container = document.getElementById('notesList');
-        if (!notes?.length) {
-            container.innerHTML = '<div style="color:#94a3b8; text-align:center;">Нет заметок</div>';
+        
+        if (!notes || notes.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">📭 Нет заметок</div>';
             return;
         }
         
-        container.innerHTML = notes.map(n => `
-            <div class="note-item" style="background:${n.color || '#f8fafc'}">
-                <div><strong>${escapeHtml(n.title)}</strong></div>
-                <div style="font-size:0.85rem;">${escapeHtml(n.content)}</div>
-                <button onclick="window.deleteNote('${n.id}')" style="margin-top:8px;">🗑</button>
+        if (notes.length >= 5) await unlockAchievement('note_master');
+        
+        container.innerHTML = notes.map(note => `
+            <div class="note-item" style="background: ${note.color || '#f8fafc'}; border-radius: 12px; margin-bottom: 8px; flex-direction: column; align-items: flex-start;">
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <strong>${escapeHtml(note.title)}</strong>
+                    <button onclick="window.deleteNote('${note.id}')" style="background:#ef4444; color:white; border:none; border-radius:20px; padding:4px 12px; cursor:pointer;">🗑</button>
+                </div>
+                <div style="margin-top: 8px; font-size:0.85rem;">${escapeHtml(note.content)}</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:8px;">📅 ${new Date(note.created_at).toLocaleString()}</div>
             </div>
         `).join('');
     }
     
     window.deleteNote = async (id) => {
-        await supabase.from('notes').delete().eq('id', id);
-        await loadNotes();
-        showNotification('Заметка удалена');
+        if (confirm('Удалить заметку?')) {
+            await supabase.from('notes').delete().eq('id', id);
+            await loadNotes();
+            showNotification('Заметка удалена');
+        }
     };
     
     async function loadPolls() {
         const { data: polls } = await supabase
             .from('polls')
-            .select('*')
+            .select('*, poll_votes(*)')
             .order('created_at', { ascending: false });
         
         const container = document.getElementById('pollsList');
-        if (!polls?.length) {
-            container.innerHTML = '<div style="color:#94a3b8; text-align:center;">Нет опросов</div>';
+        
+        if (!polls || polls.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">📊 Нет опросов</div>';
             return;
         }
         
-        container.innerHTML = polls.map(p => `
-            <div class="poll-item" style="background:#f8fafc">
-                <strong>📊 ${escapeHtml(p.question)}</strong>
-                <div style="font-size:0.8rem; margin-top:8px;">
-                    Вариантов: ${p.options?.length || 0}
+        const userPolls = polls.filter(p => p.created_by === currentUser.id);
+        if (userPolls.length >= 3) await unlockAchievement('poll_creator');
+        
+        for (const poll of polls) {
+            const { data: author } = await supabase.from('profiles').select('username').eq('id', poll.created_by).single();
+            const votes = poll.poll_votes || [];
+            const totalVotes = votes.length;
+            const userVote = votes.find(v => v.user_id === currentUser.id);
+            const options = poll.options || [];
+            
+            const pollHtml = document.createElement('div');
+            pollHtml.className = 'poll-item';
+            pollHtml.style.cssText = 'flex-direction: column; align-items: flex-start; margin-bottom: 16px; background:#f8fafc; border-radius:12px;';
+            
+            pollHtml.innerHTML = `
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <strong>📊 ${escapeHtml(poll.question)}</strong>
+                    <span style="font-size:0.7rem; color:#64748b;">Автор: ${escapeHtml(author?.username || 'Студент')}</span>
                 </div>
-            </div>
-        `).join('');
+                <div id="poll-${poll.id}" style="margin-top: 12px; width: 100%;"></div>
+                <div class="poll-stats" style="margin-top: 8px;">📊 Всего голосов: ${totalVotes}</div>
+            `;
+            
+            container.appendChild(pollHtml);
+            
+            const optionsContainer = pollHtml.querySelector(`#poll-${poll.id}`);
+            
+            for (let idx = 0; idx < options.length; idx++) {
+                const opt = options[idx];
+                const count = votes.filter(v => v.option_index === idx).length;
+                const percent = totalVotes > 0 ? (count / totalVotes * 100).toFixed(1) : 0;
+                
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'poll-option';
+                optionDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>${escapeHtml(opt)}</span>
+                        <span>${count} (${percent}%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percent}%;"></div>
+                    </div>
+                    ${!userVote && currentUser.id !== poll.created_by ? `<button class="vote-btn" onclick="window.votePoll('${poll.id}', ${idx})">👍 Голосовать</button>` : ''}
+                `;
+                optionsContainer.appendChild(optionDiv);
+            }
+        }
+    }
+    
+    window.votePoll = async (pollId, optionIndex) => {
+        const { data: existing } = await supabase
+            .from('poll_votes')
+            .select('id')
+            .eq('poll_id', pollId)
+            .eq('user_id', currentUser.id)
+            .single();
+        
+        if (existing) {
+            showNotification('Вы уже голосовали!', '⚠️');
+            return;
+        }
+        
+        const { error } = await supabase.from('poll_votes').insert({
+            poll_id: pollId,
+            user_id: currentUser.id,
+            option_index: optionIndex
+        });
+        
+        if (!error) {
+            showNotification('Голос учтен!', '✅');
+            document.getElementById('pollsList').innerHTML = '';
+            await loadPolls();
+        }
+    };
+    
+    async function loadLeaderboard() {
+        const { data: topStudents } = await supabase
+            .from('profiles')
+            .select('username, total_study_seconds')
+            .order('total_study_seconds', { ascending: false })
+            .limit(10);
+        
+        const container = document.getElementById('leaderboardList');
+        
+        if (topStudents) {
+            const { data: allUsers } = await supabase.from('profiles').select('id, total_study_seconds').order('total_study_seconds', { ascending: false });
+            if (allUsers) {
+                const rank = allUsers.findIndex(u => u.id === currentUser.id) + 1;
+                document.getElementById('rankPlace').textContent = `#${rank}`;
+            }
+            
+            container.innerHTML = topStudents.map((s, i) => {
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '👤';
+                return `
+                    <div class="leaderboard-item">
+                        <div class="user-left">
+                            <span class="medal">${medal}</span>
+                            <strong>${escapeHtml(s.username || 'Студент')}</strong>
+                        </div>
+                        <div>${formatTotal(s.total_study_seconds || 0)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
     }
     
     async function loadMessages() {
@@ -669,11 +751,11 @@
             .from('messages')
             .select('*')
             .order('created_at', { ascending: true })
-            .limit(50);
+            .limit(100);
         
         const container = document.getElementById('chatMessages');
-        if (!messages?.length) {
-            container.innerHTML = '<div style="text-align:center; color:#94a3b8;">Нет сообщений</div>';
+        if (!messages || messages.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#94a3b8;">💬 Нет сообщений</div>';
             return;
         }
         
@@ -688,64 +770,153 @@
     }
     
     async function loadGroupList() {
-        const { data: users } = await supabase
-            .from('profiles')
-            .select('username, status, last_seen');
+        const { data: users } = await supabase.from('profiles').select('username, status, last_seen');
+        const now = new Date();
+        const online = users?.filter(u => u.last_seen && new Date(u.last_seen) > new Date(now - 120000)).length || 0;
+        document.getElementById('onlineCount').textContent = online;
         
-        if (users) {
-            const now = new Date();
-            const online = users.filter(u => u.last_seen && new Date(u.last_seen) > new Date(now - 120000)).length;
-            document.getElementById('onlineCount').textContent = online;
-            
-            const container = document.getElementById('groupList');
-            container.innerHTML = users.map(u => `
-                <div class="user-item">
-                    <div class="user-left">
-                        <span class="online-dot"></span>
-                        <strong>${escapeHtml(u.username || 'Аноним')}</strong>
-                    </div>
-                    <div>${u.status || '🏠'}</div>
+        const container = document.getElementById('groupList');
+        container.innerHTML = users?.map(u => `
+            <div class="user-item">
+                <div class="user-left">
+                    <span class="online-dot"></span>
+                    <strong>${escapeHtml(u.username || 'Аноним')}</strong>
                 </div>
-            `).join('');
+                <div>${u.status || '🏠 Дома'}</div>
+            </div>
+        `).join('') || '<div style="padding:20px;">Нет пользователей</div>';
+    }
+    
+    async function updateStats() {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('message_count, achievements')
+            .eq('id', currentUser.id)
+            .single();
+        
+        if (profile) {
+            document.getElementById('messageCount').textContent = profile.message_count || 0;
         }
     }
     
-    function showAuthForm() {
-        const container = document.getElementById('authContent');
-        container.innerHTML = `
-            <button class="btn-google" id="googleLoginBtn">
-                🚀 Войти через Google
-            </button>
-            <p style="margin-top: 20px; text-align: center; color: #64748b;">
-                Войдите, чтобы использовать платформу
-            </p>
-        `;
+    async function startSession() {
+        if (!currentUser || sessionStartTime) return;
         
-        document.getElementById('googleLoginBtn')?.addEventListener('click', async () => {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: window.location.href }
-            });
-            if (error) alert('Ошибка: ' + error.message);
-        });
+        sessionStartTime = new Date();
+        await supabase.from('profiles').update({
+            study_session_start: sessionStartTime.toISOString(),
+            status: '📚 Учусь'
+        }).eq('id', currentUser.id);
+        
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (sessionStartTime) {
+                const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+                document.getElementById('timerDisplay').textContent = formatTime(elapsed);
+            }
+        }, 1000);
+        
+        await loadGroupList();
     }
     
-    function showApp() {
-        document.getElementById('authCard').classList.add('hidden');
-        document.getElementById('appCard').classList.remove('hidden');
-        document.getElementById('groupCard').classList.remove('hidden');
-        document.getElementById('leaderboardCard').classList.remove('hidden');
-        document.getElementById('notesCard').classList.remove('hidden');
-        document.getElementById('pollsCard').classList.remove('hidden');
-        document.getElementById('achievementsCard').classList.remove('hidden');
-        document.getElementById('chatCard').classList.remove('hidden');
+    async function pauseSession() {
+        if (!currentUser || !sessionStartTime) return;
         
-        // Обновляем last_seen каждые 30 секунд
-        setInterval(async () => {
-            if (currentUser) {
-                await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', currentUser.id);
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        if (elapsed > 0) {
+            totalSeconds += elapsed;
+            currentSessionCount++;
+            document.getElementById('sessionCount').textContent = currentSessionCount;
+            document.getElementById('totalStudyDisplay').textContent = `📚 Всего учёбы: ${formatTotal(totalSeconds)}`;
+            
+            if (currentSessionCount === 1) await unlockAchievement('first_step');
+            if (elapsed >= 7200) await unlockAchievement('marathon');
+        }
+        
+        sessionStartTime = null;
+        await supabase.from('profiles').update({
+            total_study_seconds: totalSeconds,
+            study_session_start: null,
+            status: '☕ Перерыв'
+        }).eq('id', currentUser.id);
+        
+        document.getElementById('timerDisplay').textContent = '00:00:00';
+        await loadGroupList();
+        await loadLeaderboard();
+    }
+    
+    async function init() {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+            currentUser = user;
+            
+            let { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+            
+            if (!profile) {
+                await supabase.from('profiles').insert({
+                    id: user.id,
+                    username: user.user_metadata?.full_name || user.email.split('@')[0],
+                    status: '🏠 Дома',
+                    total_study_seconds: 0,
+                    message_count: 0,
+                    achievements: []
+                });
+                profile = { total_study_seconds: 0 };
             }
-        }, 30000);
+            
+            totalSeconds = profile.total_study_seconds || 0;
+            document.getElementById('totalStudyDisplay').textContent = `📚 Всего учёбы: ${formatTotal(totalSeconds)}`;
+            document.getElementById('userName').textContent = user.user_metadata?.full_name || user.email.split('@')[0];
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').textContent = (user.user_metadata?.full_name?.charAt(0) || user.email.charAt(0)).toUpperCase();
+            
+            const hour = new Date().getHours();
+            if (hour < 8) await unlockAchievement('early_bird');
+            
+            await loadAchievements();
+            await loadNotes();
+            await loadPolls();
+            await loadLeaderboard();
+            await loadMessages();
+            await loadGroupList();
+            await updateStats();
+            
+            document.getElementById('authCard').classList.add('hidden');
+            document.getElementById('appCard').classList.remove('hidden');
+            document.getElementById('groupCard').classList.remove('hidden');
+            document.getElementById('leaderboardCard').classList.remove('hidden');
+            document.getElementById('notesCard').classList.remove('hidden');
+            document.getElementById('pollsCard').classList.remove('hidden');
+            document.getElementById('achievementsCard').classList.remove('hidden');
+            document.getElementById('chatCard').classList.remove('hidden');
+            
+            setInterval(() => {
+                loadGroupList();
+                loadLeaderboard();
+            }, 10000);
+            
+            supabase.channel('public')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => loadMessages())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => loadNotes())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'polls' }, () => {
+                    document.getElementById('pollsList').innerHTML = '';
+                    loadPolls();
+                })
+                .subscribe();
+        } else {
+            document.getElementById('authContent').innerHTML = `
+                <button class="btn-google" id="googleLoginBtn">🚀 Войти через Google</button>
+                <p style="margin-top:20px; text-align:center; color:#64748b;">Войдите, чтобы использовать платформу</p>
+            `;
+            document.getElementById('googleLoginBtn')?.addEventListener('click', async () => {
+                await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
+            });
+        }
     }
     
     function escapeHtml(str) {
@@ -753,12 +924,11 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
-    // Слушатели событий
-    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        location.reload();
-    });
-    
+    // Event listeners
+    document.getElementById('startBtn')?.addEventListener('click', startSession);
+    document.getElementById('pauseBtn')?.addEventListener('click', pauseSession);
+    document.getElementById('endBtn')?.addEventListener('click', pauseSession);
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => { await supabase.auth.signOut(); location.reload(); });
     document.getElementById('sendBtn')?.addEventListener('click', async () => {
         const input = document.getElementById('chatInput');
         const text = input.value.trim();
@@ -766,57 +936,88 @@
             await supabase.from('messages').insert({
                 user_id: currentUser.id,
                 username: document.getElementById('userName').textContent,
-                message: text,
-                created_at: new Date().toISOString()
+                message: text
             });
+            
+            const { data: profile } = await supabase.from('profiles').select('message_count').eq('id', currentUser.id).single();
+            const newCount = (profile?.message_count || 0) + 1;
+            await supabase.from('profiles').update({ message_count: newCount }).eq('id', currentUser.id);
+            
+            if (newCount >= 20) await unlockAchievement('activist');
+            
             input.value = '';
             await loadMessages();
+            await updateStats();
         }
     });
     
-    document.getElementById('addNoteBtn')?.addEventListener('click', async () => {
-        const title = prompt('Заголовок заметки:');
-        const content = prompt('Содержание:');
+    document.getElementById('addNoteBtn')?.addEventListener('click', () => {
+        document.getElementById('noteModal').style.display = 'flex';
+    });
+    
+    document.getElementById('saveNoteBtn')?.addEventListener('click', async () => {
+        const title = document.getElementById('noteTitle').value;
+        const content = document.getElementById('noteContent').value;
         if (title && content) {
             await supabase.from('notes').insert({
                 user_id: currentUser.id,
                 title: title,
                 content: content,
-                created_at: new Date().toISOString()
+                color: 'white'
             });
+            document.getElementById('noteModal').style.display = 'none';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
             await loadNotes();
             showNotification('Заметка создана!', '✅');
+        } else {
+            alert('Заполните заголовок и содержание');
         }
     });
     
-    document.getElementById('createPollBtn')?.addEventListener('click', async () => {
-        const question = prompt('Вопрос для опроса:');
-        const optionsStr = prompt('Варианты ответов (через запятую):');
+    document.getElementById('createPollBtn')?.addEventListener('click', () => {
+        document.getElementById('pollModal').style.display = 'flex';
+    });
+    
+    document.getElementById('savePollBtn')?.addEventListener('click', async () => {
+        const question = document.getElementById('pollQuestion').value;
+        const optionsStr = document.getElementById('pollOptions').value;
         if (question && optionsStr) {
-            const options = optionsStr.split(',').map(o => o.trim());
-            await supabase.from('polls').insert({
-                question: question,
-                options: options,
-                created_by: currentUser.id,
-                created_at: new Date().toISOString()
-            });
-            await loadPolls();
-            showNotification('Опрос создан!', '✅');
+            const options = optionsStr.split(',').map(o => o.trim()).filter(o => o);
+            if (options.length >= 2) {
+                await supabase.from('polls').insert({
+                    question: question,
+                    options: options,
+                    created_by: currentUser.id
+                });
+                document.getElementById('pollModal').style.display = 'none';
+                document.getElementById('pollQuestion').value = '';
+                document.getElementById('pollOptions').value = '';
+                document.getElementById('pollsList').innerHTML = '';
+                await loadPolls();
+                showNotification('Опрос создан!', '✅');
+            } else {
+                alert('Введите минимум 2 варианта');
+            }
+        } else {
+            alert('Заполните все поля');
         }
     });
     
-    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') document.getElementById('sendBtn').click();
+    document.getElementById('closeNoteModal')?.addEventListener('click', () => {
+        document.getElementById('noteModal').style.display = 'none';
     });
     
-    // Подписка на реальные обновления
-    supabase.channel('public')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => loadMessages())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => loadNotes())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'polls' }, () => loadPolls())
-        .subscribe();
+    document.getElementById('closePollModal')?.addEventListener('click', () => {
+        document.getElementById('pollModal').style.display = 'none';
+    });
     
-    // Запуск
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    };
+    
     init();
 </script>
 </body>
