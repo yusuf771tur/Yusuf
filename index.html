@@ -502,14 +502,12 @@
         <div id="leaderboardList"></div>
     </div>
 
-    <!-- НОВАЯ ФУНКЦИЯ 1: ЗАМЕТКИ -->
     <div class="card hidden" id="notesCard">
         <h2>📝 Мои заметки</h2>
         <button class="btn btn-primary btn-sm" id="addNoteBtn" style="margin-bottom: 12px;">+ Новая заметка</button>
         <div id="notesList"></div>
     </div>
 
-    <!-- НОВАЯ ФУНКЦИЯ 2: ОПРОСЫ -->
     <div class="card hidden" id="pollsCard">
         <h2>📊 Опросы группы</h2>
         <button class="btn btn-primary btn-sm" id="createPollBtn" style="margin-bottom: 12px;">+ Создать опрос</button>
@@ -531,7 +529,6 @@
     </div>
 </div>
 
-<!-- Модальное окно для заметок -->
 <div id="noteModal" class="modal">
     <div class="modal-content">
         <h3>✏️ Новая заметка</h3>
@@ -557,7 +554,6 @@
     </div>
 </div>
 
-<!-- Модальное окно для опросов -->
 <div id="pollModal" class="modal">
     <div class="modal-content">
         <h3>📊 Создать опрос</h3>
@@ -574,739 +570,419 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm&#39;);
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+   
+    const SUPABASE_URL = 'https://qbykreduhwmlriyuhnxs.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFieWtyZWR1aHdtbHJpeXVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODQ1MzcsImV4cCI6MjA5MjI2MDUzN30.hT3f3TIZfiZ044tmaS899sUS-2O9MspbAFvldG8e-hQ';
+   
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+   
+    let currentUser = null;
+    let sessionStartTime = null;
+    let totalSeconds = 0;
+    let timerInterval = null;
+    let heartbeatInterval = null;
+    let currentSessionCount = 0;
+   
+    const ACHIEVEMENTS_CONFIG = {
+        early_bird: { id: 'early_bird', title: '🌅 Ранняя пташка', desc: 'Зашел на платформу до 8:00', icon: '🌅' },
+        marathon: { id: 'marathon', title: '🏃 Марафонец', desc: 'Проучился более 2 часов за раз', icon: '🏃' },
+        activist: { id: 'activist', title: '💬 Активист', desc: 'Написал 20 сообщений в чате', icon: '💬' },
+        first_step: { id: 'first_step', title: '🎯 Первый шаг', desc: 'Прошел первую учебную сессию', icon: '🎯' },
+        returning: { id: 'returning', title: '🔄 Возвращение', desc: 'Вернулся к учёбе после перерыва', icon: '🔄' },
+        note_master: { id: 'note_master', title: '📝 Мастер заметок', desc: 'Создал 10 заметок', icon: '📝' },
+        poll_creator: { id: 'poll_creator', title: '🎯 Организатор', desc: 'Создал 3 опроса', icon: '🎯' }
+    };
+   
+    function showNotification(message, title = 'Уведомление') {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+   
+    async function unlockAchievement(achievementId) {
+        if (!currentUser) return false;
        
-        const SUPABASE_URL = 'https://qbykreduhwmlriyuhnxs.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFieWtyZWR1aHdtbHJpeXVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODQ1MzcsImV4cCI6MjA5MjI2MDUzN30.hT3f3TIZfiZ044tmaS899sUS-2O9MspbAFvldG8e-hQ';
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('achievements')
+            .eq('id', currentUser.id)
+            .single();
        
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentAchievements = profile?.achievements || [];
+        if (currentAchievements.includes(achievementId)) return false;
        
-        let currentUser = null;
-        let sessionStartTime = null;
-        let totalSeconds = 0;
-        let timerInterval = null;
-        let heartbeatInterval = null;
-        let currentSessionCount = 0;
+        currentAchievements.push(achievementId);
        
-        const ACHIEVEMENTS_CONFIG = {
-            early_bird: { id: 'early_bird', title: '🌅 Ранняя пташка', desc: 'Зашел на платформу до 8:00', icon: '🌅' },
-            marathon: { id: 'marathon', title: '🏃 Марафонец', desc: 'Проучился более 2 часов за раз', icon: '🏃' },
-            activist: { id: 'activist', title: '💬 Активист', desc: 'Написал 20 сообщений в чате', icon: '💬' },
-            first_step: { id: 'first_step', title: '🎯 Первый шаг', desc: 'Прошел первую учебную сессию', icon: '🎯' },
-            returning: { id: 'returning', title: '🔄 Возвращение', desc: 'Вернулся к учёбе после перерыва', icon: '🔄' },
-            note_master: { id: 'note_master', title: '📝 Мастер заметок', desc: 'Создал 10 заметок', icon: '📝' },
-            poll_creator: { id: 'poll_creator', title: '🎯 Организатор', desc: 'Создал 3 опроса', icon: '🎯' }
-        };
+        const { error } = await supabase
+            .from('profiles')
+            .update({ achievements: currentAchievements })
+            .eq('id', currentUser.id);
        
-        function showNotification(message, title = 'Уведомление') {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `<strong>${title}</strong><br>${message}`;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
-        }
-       
-        async function unlockAchievement(achievementId) {
-            if (!currentUser) return false;
-           
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('achievements')
-                .eq('id', currentUser.id)
-                .single();
-           
-            let currentAchievements = profile?.achievements || [];
-            if (currentAchievements.includes(achievementId)) return false;
-           
-            currentAchievements.push(achievementId);
-           
-            const { error } = await supabase
-                .from('profiles')
-                .update({ achievements: currentAchievements })
-                .eq('id', currentUser.id);
-           
-            if (!error) {
-                const achievement = ACHIEVEMENTS_CONFIG[achievementId];
-                showNotification(`${achievement.title}: ${achievement.desc}`, '🎉 Новое достижение!');
-                await loadAchievements();
-                await updateUserStats();
-                return true;
-            }
-            return false;
-        }
-       
-        function formatTime(seconds) {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = seconds % 60;
-            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-       
-        function formatTotal(seconds) {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            return h > 0 ? `${h}ч ${m}мин` : `${m} мин`;
-        }
-       
-        function updateTimerUI() {
-            const timerDisplay = document.getElementById('timerDisplay');
-            const totalDisplay = document.getElementById('totalStudyDisplay');
-            if (sessionStartTime) {
-                const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-                timerDisplay.textContent = formatTime(elapsed);
-            } else {
-                timerDisplay.textContent = '00:00:00';
-            }
-            totalDisplay.textContent = `📚 Всего учёбы: ${formatTotal(totalSeconds)}`;
-        }
-       
-        async function loadAchievements() {
-            if (!currentUser) return;
-           
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('achievements')
-                .eq('id', currentUser.id)
-                .single();
-           
-            const userAchievements = profile?.achievements || [];
-            const container = document.getElementById('achievementsList');
-            if (!container) return;
-           
-            container.innerHTML = Object.values(ACHIEVEMENTS_CONFIG).map(ach => {
-                const isUnlocked = userAchievements.includes(ach.id);
-                return `
-                    <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}">
-                        <div class="achievement-icon">${ach.icon}</div>
-                        <div class="achievement-title">${ach.title}</div>
-                        <div class="achievement-desc">${ach.desc}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-       
-        async function loadLeaderboard() {
-            const { data: topStudents, error } = await supabase
-                .from('profiles')
-                .select('username, total_study_seconds')
-                .order('total_study_seconds', { ascending: false })
-                .limit(10);
-           
-            if (error || !topStudents) return;
-           
-            const container = document.getElementById('leaderboardList');
-            if (!container) return;
-           
-            if (currentUser) {
-                const { data: allUsers } = await supabase
-                    .from('profiles')
-                    .select('id, total_study_seconds')
-                    .order('total_study_seconds', { ascending: false });
-               
-                if (allUsers) {
-                    const userRank = allUsers.findIndex(u => u.id === currentUser.id) + 1;
-                    document.getElementById('rankPlace').textContent = `#${userRank}`;
-                }
-            }
-           
-            container.innerHTML = topStudents.map((student, index) => {
-                let medal = '👤';
-                if (index === 0) medal = '🥇';
-                else if (index === 1) medal = '🥈';
-                else if (index === 2) medal = '🥉';
-               
-                return `
-                    <div class="leaderboard-item">
-                        <div class="user-left">
-                            <span class="medal">${medal}</span>
-                            <div>
-                                <strong>${escapeHtml(student.username || 'Студент')}</strong>
-                                <div style="font-size: 0.75rem; color: #94a3b8;">Место #${index + 1}</div>
-                            </div>
-                        </div>
-                        <div style="font-weight: bold; color: #facc15;">
-                            ${formatTotal(student.total_study_seconds || 0)}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-       
-        async function updateUserStats() {
-            if (!currentUser) return;
-           
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('message_count, achievements')
-                .eq('id', currentUser.id)
-                .single();
-           
-            if (profile) {
-                document.getElementById('messageCount').textContent = profile.message_count || 0;
-                document.getElementById('achievementCount').textContent = (profile.achievements?.length || 0) + '/' + Object.keys(ACHIEVEMENTS_CONFIG).length;
-            }
-        }
-       
-        // ========== ФУНКЦИЯ 1: ЗАМЕТКИ ==========
-        async function loadNotes() {
-            if (!currentUser) return;
-           
-            const { data: notes, error } = await supabase
-                .from('notes')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .order('created_at', { ascending: false });
-           
-            if (error) {
-                console.error('Ошибка загрузки заметок:', error);
-                return;
-            }
-           
-            const container = document.getElementById('notesList');
-            if (!container) return;
-           
-            if (!notes || notes.length === 0) {
-                container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">📭 Нет заметок. Создайте первую!</p>';
-                return;
-            }
-           
-            // Проверка на ачивку "Мастер заметок" (10 заметок)
-            if (notes.length >= 10) {
-                await unlockAchievement('note_master');
-            }
-           
-            container.innerHTML = notes.map(note => `
-                <div class="note-item" style="background: ${note.color || '#f8fafc'}; border-radius: 12px; margin-bottom: 8px; flex-direction: column; align-items: flex-start;">
-                    <div style="display: flex; justify-content: space-between; width: 100%;">
-                        <strong style="font-size: 0.9rem;">${escapeHtml(note.title)}</strong>
-                        <div>
-                            <button class="delete-btn" onclick="deleteNote('${note.id}')">🗑</button>
-                        </div>
-                    </div>
-                    <div class="note-content" style="margin-top: 8px;">${escapeHtml(note.content)}</div>
-                    <div style="font-size: 0.65rem; color: #64748b; margin-top: 8px;">📅 ${new Date(note.created_at).toLocaleString()}</div>
-                </div>
-            `).join('');
-        }
-       
-        window.deleteNote = async (noteId) => {
-            if (confirm('Удалить заметку?')) {
-                await supabase.from('notes').delete().eq('id', noteId);
-                await loadNotes();
-                showNotification('Заметка удалена');
-            }
-        };
-       
-        async function createNote(title, content, color) {
-            if (!currentUser) return;
-           
-            const { error } = await supabase.from('notes').insert({
-                user_id: currentUser.id,
-                title: title,
-                content: content,
-                color: color,
-                created_at: new Date().toISOString()
-            });
-           
-            if (error) {
-                console.error('Ошибка создания заметки:', error);
-                showNotification('Ошибка при создании заметки');
-            } else {
-                showNotification('✅ Заметка сохранена!');
-                await loadNotes();
-            }
-        }
-       
-        // ========== ФУНКЦИЯ 2: ОПРОСЫ ==========
-        async function loadPolls() {
-            if (!currentUser) return;
-           
-            const { data: polls, error } = await supabase
-                .from('polls')
-                .select('*')
-                .order('created_at', { ascending: false });
-           
-            if (error) {
-                console.error('Ошибка загрузки опросов:', error);
-                return;
-            }
-           
-            const container = document.getElementById('pollsList');
-            if (!container) return;
-           
-            // Проверка на ачивку "Организатор" (3 опроса)
-            const userPolls = polls?.filter(p => p.created_by === currentUser.id) || [];
-            if (userPolls.length >= 3) {
-                await unlockAchievement('poll_creator');
-            }
-           
-            if (!polls || polls.length === 0) {
-                container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">📊 Нет опросов. Создайте первый!</p>';
-                return;
-            }
-           
-            container.innerHTML = await Promise.all(polls.map(async (poll) => {
-                // Получаем автора
-                const { data: author } = await supabase
-                    .from('profiles')
-                    .select('username')
-                    .eq('id', poll.created_by)
-                    .single();
-               
-                // Получаем голоса
-                const { data: votes } = await supabase
-                    .from('poll_votes')
-                    .select('option_index')
-                    .eq('poll_id', poll.id);
-               
-                const totalVotes = votes?.length || 0;
-                const userVote = votes?.find(v => v.user_id === currentUser.id);
-                const options = poll.options || [];
-               
-                // Подсчет процентов
-                const optionStats = options.map((opt, idx) => {
-                    const count = votes?.filter(v => v.option_index === idx).length || 0;
-                    const percent = totalVotes > 0 ? (count / totalVotes * 100).toFixed(1) : 0;
-                    return { text: opt, count, percent };
-                });
-               
-                return `
-                    <div class="poll-item" style="flex-direction: column; align-items: flex-start;">
-                        <div style="display: flex; justify-content: space-between; width: 100%;">
-                            <strong>📊 ${escapeHtml(poll.question)}</strong>
-                            <span style="font-size: 0.7rem; color: #64748b;">Автор: ${escapeHtml(author?.username || 'Студент')}</span>
-                        </div>
-                        <div style="margin-top: 12px; width: 100%;">
-                            ${optionStats.map((opt, idx) => `
-                                <div class="poll-option" style="flex-direction: column; align-items: flex-start;">
-                                    <div style="display: flex; justify-content: space-between; width: 100%;">
-                                        <span>${escapeHtml(opt.text)}</span>
-                                        <span>${opt.count} голосов (${opt.percent}%)</span>
-                                    </div>
-                                    <div class="progress-bar" style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 4px;">
-                                        <div style="width: ${opt.percent}%; height: 100%; background: #667eea; border-radius: 3px;"></div>
-                                    </div>
-                                    ${!userVote && currentUser.id !== poll.created_by ? `<button class="vote-btn" style="margin-top: 6px;" onclick="votePoll('${poll.id}', ${idx})">Голосовать</button>` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="poll-stats">📊 Всего голосов: ${totalVotes}</div>
-                    </div>
-                `;
-            }).join(''));
-        }
-       
-        window.votePoll = async (pollId, optionIndex) => {
-            if (!currentUser) return;
-           
-            // Проверяем, не голосовал ли уже
-            const { data: existing } = await supabase
-                .from('poll_votes')
-                .select('id')
-                .eq('poll_id', pollId)
-                .eq('user_id', currentUser.id)
-                .single();
-           
-            if (existing) {
-                showNotification('Вы уже голосовали в этом опросе!', '⚠️');
-                return;
-            }
-           
-            const { error } = await supabase.from('poll_votes').insert({
-                poll_id: pollId,
-                user_id: currentUser.id,
-                option_index: optionIndex,
-                voted_at: new Date().toISOString()
-            });
-           
-            if (error) {
-                console.error('Ошибка голосования:', error);
-                showNotification('Ошибка при голосовании');
-            } else {
-                showNotification('Ваш голос учтен!', '✅');
-                await loadPolls();
-            }
-        };
-       
-        async function createPoll(question, optionsArray) {
-            if (!currentUser) return;
-           
-            const { error } = await supabase.from('polls').insert({
-                question: question,
-                options: optionsArray,
-                created_by: currentUser.id,
-                created_at: new Date().toISOString(),
-                is_active: true
-            });
-           
-            if (error) {
-                console.error('Ошибка создания опроса:', error);
-                showNotification('Ошибка при создании опроса');
-            } else {
-                showNotification('✅ Опрос создан! Пригласите других голосовать!');
-                await loadPolls();
-            }
-        }
-       
-        // ========== ФУНКЦИИ СЕССИЙ ==========
-        async function startSession() {
-            if (!currentUser || sessionStartTime) return;
-           
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('status')
-                .eq('id', currentUser.id)
-                .single();
-           
-            if (profile?.status === '☕ Перерыв') {
-                await unlockAchievement('returning');
-            }
-           
-            sessionStartTime = new Date();
-            await supabase.from('profiles').update({
-                study_session_start: sessionStartTime.toISOString(),
-                status: '📚 Учусь',
-                last_seen: new Date().toISOString()
-            }).eq('id', currentUser.id);
-           
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimerUI, 1000);
-            await loadGroupList();
-        }
-       
-        async function pauseSession() {
-            if (!currentUser || !sessionStartTime) return;
-           
-            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-            if (elapsed > 0) {
-                totalSeconds += elapsed;
-                currentSessionCount++;
-                document.getElementById('sessionCount').textContent = currentSessionCount;
-            }
-           
-            sessionStartTime = null;
-            await supabase.from('profiles').update({
-                total_study_seconds: totalSeconds,
-                study_session_start: null,
-                status: '☕ Перерыв',
-                last_seen: new Date().toISOString()
-            }).eq('id', currentUser.id);
-           
-            updateTimerUI();
-            await loadGroupList();
-            await loadLeaderboard();
-        }
-       
-        async function endSession() {
-            if (!currentUser) return;
-           
-            if (sessionStartTime) {
-                const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-                if (elapsed > 0) {
-                    totalSeconds += elapsed;
-                    currentSessionCount++;
-                    document.getElementById('sessionCount').textContent = currentSessionCount;
-                   
-                    if (elapsed >= 7200) {
-                        await unlockAchievement('marathon');
-                    }
-                   
-                    if (currentSessionCount === 1) {
-                        await unlockAchievement('first_step');
-                    }
-                }
-                sessionStartTime = null;
-            }
-           
-            await supabase.from('profiles').update({
-                total_study_seconds: totalSeconds,
-                study_session_start: null,
-                status: '🏠 Дома',
-                last_seen: new Date().toISOString()
-            }).eq('id', currentUser.id);
-           
-            updateTimerUI();
-            await loadGroupList();
-            await loadLeaderboard();
-        }
-       
-        async function loadGroupList() {
-            if (!currentUser) return;
-            const { data: users, error } = await supabase
-                .from('profiles')
-                .select('id, username, status, last_seen, total_study_seconds')
-                .order('username');
-            if (error) return;
-           
-            const now = new Date();
-            const twoMinsAgo = new Date(now - 120000);
-            let onlineCount = 0;
-           
-            const html = users.map(u => {
-                const isOnline = u.last_seen ? new Date(u.last_seen) > twoMinsAgo : false;
-                if (isOnline) onlineCount++;
-                const icon = u.status?.includes('📚') ? '📚' : (u.status?.includes('☕') ? '☕' : (u.status?.includes('🎮') ? '🎮' : '🏠'));
-                return `
-                    <div class="user-item">
-                        <div class="user-left">
-                            <span class="online-dot ${isOnline ? '' : 'offline-dot'}"></span>
-                            <span style="font-size: 1.2rem;">${icon}</span>
-                            <div>
-                                <strong>${escapeHtml(u.username || 'Аноним')}</strong>
-                                <div style="font-size: 0.7rem; color: #10b981;">📖 ${formatTotal(u.total_study_seconds || 0)}</div>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.75rem;">${isOnline ? '🟢 онлайн' : '⚫ офлайн'}</div>
-                    </div>
-                `;
-            }).join('');
-           
-            const groupListEl = document.getElementById('groupList');
-            if (groupListEl) groupListEl.innerHTML = html || '<div style="padding: 20px; text-align: center;">Нет участников</div>';
-            const onlineCountEl = document.getElementById('onlineCount');
-            if (onlineCountEl) onlineCountEl.textContent = onlineCount;
-        }
-       
-        async function loadMessages() {
-            const { data, error } = await supabase
-                .from('messages')
-                .select('*')
-                .order('created_at', { ascending: true })
-                .limit(100);
-            if (error) return;
-            const container = document.getElementById('chatMessages');
-            if (!container) return;
-           
-            if (!data || data.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #94a3b8;">✨ Напишите первое сообщение</div>';
-                return;
-            }
-            container.innerHTML = data.map(msg => `
-                <div class="message">
-                    <strong>${escapeHtml(msg.username)}</strong>
-                    <span class="message-time">${new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                    <div style="margin-top: 6px;">${escapeHtml(msg.message)}</div>
-                </div>
-            `).join('');
-            container.scrollTop = container.scrollHeight;
-        }
-       
-        async function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (!text || !currentUser) return;
-           
-            const username = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Пользователь';
-           
-            await supabase.from('messages').insert({
-                user_id: currentUser.id,
-                username: username,
-                message: text,
-                created_at: new Date().toISOString()
-            });
-           
-            const { data: prof } = await supabase
-                .from('profiles')
-                .select('message_count')
-                .eq('id', currentUser.id)
-                .single();
-           
-            const newCount = (prof?.message_count || 0) + 1;
-            await supabase.from('profiles').update({ message_count: newCount }).eq('id', currentUser.id);
-           
-            if (newCount >= 20) {
-                await unlockAchievement('activist');
-            }
-           
-            input.value = '';
-            await loadMessages();
+        if (!error) {
+            const achievement = ACHIEVEMENTS_CONFIG[achievementId];
+            showNotification(`${achievement.title}: ${achievement.desc}`, '🎉 Новое достижение!');
+            await loadAchievements();
             await updateUserStats();
+            return true;
         }
-       
-        async function updateLastSeen() {
-            if (!currentUser) return;
-            await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', currentUser.id);
+        return false;
+    }
+   
+    function formatTime(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+   
+    function formatTotal(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        return h > 0 ? `${h}ч ${m}мин` : `${m} мин`;
+    }
+   
+    function updateTimerUI() {
+        const timerDisplay = document.getElementById('timerDisplay');
+        const totalDisplay = document.getElementById('totalStudyDisplay');
+        if (sessionStartTime) {
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+            timerDisplay.textContent = formatTime(elapsed);
+        } else {
+            timerDisplay.textContent = '00:00:00';
         }
+        totalDisplay.textContent = `📚 Всего учёбы: ${formatTotal(totalSeconds)}`;
+    }
+   
+    async function loadAchievements() {
+        if (!currentUser) return;
        
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('achievements')
+            .eq('id', currentUser.id)
+            .single();
        
-        async function init() {
-            const { data: { user } } = await supabase.auth.getUser();
+        const userAchievements = profile?.achievements || [];
+        const container = document.getElementById('achievementsList');
+        if (!container) return;
+       
+        container.innerHTML = Object.values(ACHIEVEMENTS_CONFIG).map(ach => {
+            const isUnlocked = userAchievements.includes(ach.id);
+            return `
+                <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}">
+                    <div class="achievement-icon">${ach.icon}</div>
+                    <div class="achievement-title">${ach.title}</div>
+                    <div class="achievement-desc">${ach.desc}</div>
+                </div>
+            `;
+        }).join('');
+    }
+   
+    async function loadLeaderboard() {
+        const { data: topStudents, error } = await supabase
+            .from('profiles')
+            .select('username, total_study_seconds')
+            .order('total_study_seconds', { ascending: false })
+            .limit(10);
+       
+        if (error || !topStudents) return;
+       
+        const container = document.getElementById('leaderboardList');
+        if (!container) return;
+       
+        if (currentUser) {
+            const { data: allUsers } = await supabase
+                .from('profiles')
+                .select('id, total_study_seconds')
+                .order('total_study_seconds', { ascending: false });
            
-            if (user) {
-                currentUser = user;
-               
-                let { data: profile } = await supabase
-                    .from('profiles')
-                    .select('total_study_seconds, study_session_start, status, message_count, achievements')
-                    .eq('id', user.id)
-                    .single();
-               
-                if (profile) {
-                    totalSeconds = profile.total_study_seconds || 0;
-                    if (profile.study_session_start && profile.status === '📚 Учусь') {
-                        sessionStartTime = new Date(profile.study_session_start);
-                        timerInterval = setInterval(updateTimerUI, 1000);
-                    }
-                } else {
-                    await supabase.from('profiles').insert({
-                        id: user.id,
-                        username: user.user_metadata?.full_name || user.email.split('@')[0],
-                        avatar_url: user.user_metadata?.avatar_url,
-                        status: '🏠 Дома',
-                        total_study_seconds: 0,
-                        message_count: 0,
-                        achievements: [],
-                        last_seen: new Date().toISOString()
-                    });
-                }
-               
-                const currentHour = new Date().getHours();
-                if (currentHour < 8) {
-                    await unlockAchievement('early_bird');
-                }
-               
-                updateTimerUI();
-                await loadAchievements();
-                await updateUserStats();
-                await loadLeaderboard();
-                await loadNotes();
-                await loadPolls();
-               
-                document.getElementById('authCard').classList.add('hidden');
-                document.getElementById('appCard').classList.remove('hidden');
-                document.getElementById('groupCard').classList.remove('hidden');
-                document.getElementById('leaderboardCard').classList.remove('hidden');
-                document.getElementById('notesCard').classList.remove('hidden');
-                document.getElementById('pollsCard').classList.remove('hidden');
-                document.getElementById('achievementsCard').classList.remove('hidden');
-                document.getElementById('chatCard').classList.remove('hidden');
-               
-                document.getElementById('userName').textContent = user.user_metadata?.full_name || user.email.split('@')[0];
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('userAvatar').textContent = (user.user_metadata?.full_name?.charAt(0) || user.email.charAt(0)).toUpperCase();
-               
-                await updateLastSeen();
-                heartbeatInterval = setInterval(updateLastSeen, 25000);
-               
-                await loadGroupList();
-                await loadMessages();
-               
-                supabase.channel('messages')
-                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => loadMessages())
-                    .subscribe();
-               
-                supabase.channel('polls')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'polls' }, () => loadPolls())
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'poll_votes' }, () => loadPolls())
-                    .subscribe();
-               
-                setInterval(() => {
-                    loadGroupList();
-                    loadLeaderboard();
-                }, 7000);
-            } else {
-                document.getElementById('authContent').innerHTML = `
-                    <button class="btn-google" id="googleLoginBtn">
-                        🚀 Войти через Google
-                    </button>
-                    <p style="margin-top: 20px; text-align: center; color: #64748b;">
-                        Войдите, чтобы отслеживать время учёбы,<br>
-                        видеть рейтинг, создавать заметки и опросы!
-                    </p>
-                `;
-                document.getElementById('googleLoginBtn')?.addEventListener('click', async () => {
-                    const { error } = await supabase.auth.signInWithOAuth({
-                        provider: 'google',
-                        options: { redirectTo: window.location.href }
-                    });
-                    if (error) alert("Ошибка входа: " + error.message);
-                });
+            if (allUsers) {
+                const userRank = allUsers.findIndex(u => u.id === currentUser.id) + 1;
+                document.getElementById('rankPlace').textContent = `#${userRank}`;
             }
         }
        
-        // Event listeners
-        document.getElementById('startBtn')?.addEventListener('click', startSession);
-        document.getElementById('pauseBtn')?.addEventListener('click', pauseSession);
-        document.getElementById('endBtn')?.addEventListener('click', endSession);
-        document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-            await supabase.auth.signOut();
-            location.reload();
-        });
-        document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
-        document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
+        container.innerHTML = topStudents.map((student, index) => {
+            let medal = '👤';
+            if (index === 0) medal = '🥇';
+            else if (index === 1) medal = '🥈';
+            else if (index === 2) medal = '🥉';
+           
+            return `
+                <div class="leaderboard-item">
+                    <div class="user-left">
+                        <span class="medal">${medal}</span>
+                        <div>
+                            <strong>${escapeHtml(student.username || 'Студент')}</strong>
+                            <div style="font-size: 0.75rem; color: #94a3b8;">Место #${index + 1}</div>
+                        </div>
+                    </div>
+                    <div style="font-weight: bold; color: #facc15;">
+                        ${formatTotal(student.total_study_seconds || 0)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+   
+    async function updateUserStats() {
+        if (!currentUser) return;
+       
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('message_count, achievements')
+            .eq('id', currentUser.id)
+            .single();
+       
+        if (profile) {
+            document.getElementById('messageCount').textContent = profile.message_count || 0;
+            document.getElementById('achievementCount').textContent = (profile.achievements?.length || 0) + '/' + Object.keys(ACHIEVEMENTS_CONFIG).length;
+        }
+    }
+   
+    async function loadNotes() {
+        if (!currentUser) return;
+       
+        const { data: notes, error } = await supabase
+            .from('notes')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+       
+        if (error) {
+            console.error('Ошибка загрузки заметок:', error);
+            return;
+        }
+       
+        const container = document.getElementById('notesList');
+        if (!container) return;
+       
+        if (!notes || notes.length === 0) {
+            container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">📭 Нет заметок. Создайте первую!</p>';
+            return;
+        }
+       
+        if (notes.length >= 10) {
+            await unlockAchievement('note_master');
+        }
+       
+        container.innerHTML = notes.map(note => `
+            <div class="note-item" style="background: ${note.color || '#f8fafc'}; border-radius: 12px; margin-bottom: 8px; flex-direction: column; align-items: flex-start;">
+                <div style="display: flex; justify-content: space-between; width: 100%;">
+                    <strong style="font-size: 0.9rem;">${escapeHtml(note.title)}</strong>
+                    <div>
+                        <button class="delete-btn" onclick="window.deleteNote('${note.id}')">🗑</button>
+                    </div>
+                </div>
+                <div class="note-content" style="margin-top: 8px;">${escapeHtml(note.content)}</div>
+                <div style="font-size: 0.65rem; color: #64748b; margin-top: 8px;">📅 ${new Date(note.created_at).toLocaleString()}</div>
+            </div>
+        `).join('');
+    }
+   
+    window.deleteNote = async (noteId) => {
+        if (confirm('Удалить заметку?')) {
+            await supabase.from('notes').delete().eq('id', noteId);
+            await loadNotes();
+            showNotification('Заметка удалена');
+        }
+    };
+   
+    async function createNote(title, content, color) {
+        if (!currentUser) return;
+       
+        const { error } = await supabase.from('notes').insert({
+            user_id: currentUser.id,
+            title: title,
+            content: content,
+            color: color,
+            created_at: new Date().toISOString()
         });
        
-        // Заметки
-        document.getElementById('addNoteBtn')?.addEventListener('click', () => {
-            document.getElementById('noteModal').style.display = 'flex';
-        });
-        document.getElementById('saveNoteBtn')?.addEventListener('click', () => {
-            const title = document.getElementById('noteTitle').value;
-            const content = document.getElementById('noteContent').value;
-            const color = document.getElementById('noteColor').value;
-            if (title && content) {
-                createNote(title, content, color);
-                document.getElementById('noteModal').style.display = 'none';
-                document.getElementById('noteTitle').value = '';
-                document.getElementById('noteContent').value = '';
+        if (error) {
+            console.error('Ошибка создания заметки:', error);
+            showNotification('Ошибка при создании заметки');
+        } else {
+            showNotification('✅ Заметка сохранена!');
+            await loadNotes();
+        }
+    }
+   
+    async function loadPolls() {
+        if (!currentUser) return;
+       
+        const { data: polls, error } = await supabase
+            .from('polls')
+            .select('*')
+            .order('created_at', { ascending: false });
+       
+        if (error) {
+            console.error('Ошибка загрузки опросов:', error);
+            return;
+        }
+       
+        const container = document.getElementById('pollsList');
+        if (!container) return;
+       
+        const userPolls = polls?.filter(p => p.created_by === currentUser.id) || [];
+        if (userPolls.length >= 3) {
+            await unlockAchievement('poll_creator');
+        }
+       
+        if (!polls || polls.length === 0) {
+            container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">📊 Нет опросов. Создайте первый!</p>';
+            return;
+        }
+       
+        for (const poll of polls) {
+            const { data: author } = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('id', poll.created_by)
+                .single();
+           
+            const { data: votes } = await supabase
+                .from('poll_votes')
+                .select('option_index, user_id')
+                .eq('poll_id', poll.id);
+           
+            const totalVotes = votes?.length || 0;
+            const userVote = votes?.find(v => v.user_id === currentUser.id);
+            const options = poll.options || [];
+           
+            const optionStats = options.map((opt, idx) => {
+                const count = votes?.filter(v => v.option_index === idx).length || 0;
+                const percent = totalVotes > 0 ? (count / totalVotes * 100).toFixed(1) : 0;
+                return { text: opt, count, percent };
+            });
+           
+            const pollHtml = `
+                <div class="poll-item" style="flex-direction: column; align-items: flex-start; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
+                        <strong>📊 ${escapeHtml(poll.question)}</strong>
+                        <span style="font-size: 0.7rem; color: #64748b;">Автор: ${escapeHtml(author?.username || 'Студент')}</span>
+                    </div>
+                    <div style="margin-top: 12px; width: 100%;">
+                        ${optionStats.map((opt, idx) => `
+                            <div class="poll-option" style="flex-direction: column; align-items: flex-start;">
+                                <div style="display: flex; justify-content: space-between; width: 100%;">
+                                    <span>${escapeHtml(opt.text)}</span>
+                                    <span>${opt.count} голосов (${opt.percent}%)</span>
+                                </div>
+                                <div class="progress-bar" style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 4px;">
+                                    <div style="width: ${opt.percent}%; height: 100%; background: #667eea; border-radius: 3px;"></div>
+                                </div>
+                                ${!userVote && currentUser.id !== poll.created_by ? `<button class="vote-btn" style="margin-top: 6px;" onclick="window.votePoll('${poll.id}', ${idx})">Голосовать</button>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="poll-stats">📊 Всего голосов: ${totalVotes}</div>
+                </div>
+            `;
+            
+            if (container.innerHTML) {
+                container.innerHTML += pollHtml;
             } else {
-                alert('Заполните заголовок и содержание');
+                container.innerHTML = pollHtml;
             }
-        });
-        document.getElementById('closeNoteModal')?.addEventListener('click', () => {
-            document.getElementById('noteModal').style.display = 'none';
+        }
+    }
+   
+    window.votePoll = async (pollId, optionIndex) => {
+        if (!currentUser) return;
+       
+        const { data: existing } = await supabase
+            .from('poll_votes')
+            .select('id')
+            .eq('poll_id', pollId)
+            .eq('user_id', currentUser.id)
+            .single();
+       
+        if (existing) {
+            showNotification('Вы уже голосовали в этом опросе!', '⚠️');
+            return;
+        }
+       
+        const { error } = await supabase.from('poll_votes').insert({
+            poll_id: pollId,
+            user_id: currentUser.id,
+            option_index: optionIndex,
+            voted_at: new Date().toISOString()
         });
        
-        // Опросы
-        document.getElementById('createPollBtn')?.addEventListener('click', () => {
-            document.getElementById('pollModal').style.display = 'flex';
-        });
-        document.getElementById('savePollBtn')?.addEventListener('click', () => {
-            const question = document.getElementById('pollQuestion').value;
-            const optionsStr = document.getElementById('pollOptions').value;
-            if (question && optionsStr) {
-                const options = optionsStr.split(',').map(opt => opt.trim()).filter(opt => opt);
-                if (options.length >= 2) {
-                    createPoll(question, options);
-                    document.getElementById('pollModal').style.display = 'none';
-                    document.getElementById('pollQuestion').value = '';
-                    document.getElementById('pollOptions').value = '';
-                } else {
-                    alert('Введите минимум 2 варианта ответа через запятую');
-                }
-            } else {
-                alert('Заполните вопрос и варианты ответов');
-            }
-        });
-        document.getElementById('closePollModal')?.addEventListener('click', () => {
-            document.getElementById('pollModal').style.display = 'none';
+        if (error) {
+            console.error('Ошибка голосования:', error);
+            showNotification('Ошибка при голосовании');
+        } else {
+            showNotification('Ваш голос учтен!', '✅');
+            document.getElementById('pollsList').innerHTML = '';
+            await loadPolls();
+        }
+    };
+   
+    async function createPoll(question, optionsArray) {
+        if (!currentUser) return;
+       
+        const { error } = await supabase.from('polls').insert({
+            question: question,
+            options: optionsArray,
+            created_by: currentUser.id,
+            created_at: new Date().toISOString(),
+            is_active: true
         });
        
-        window.onclick = (event) => {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        };
+        if (error) {
+            console.error('Ошибка создания опроса:', error);
+            showNotification('Ошибка при создании опроса');
+        } else {
+            showNotification('✅ Опрос создан! Пригласите других голосовать!');
+            document.getElementById('pollsList').innerHTML = '';
+            await loadPolls();
+        }
+    }
+   
+    async function startSession() {
+        if (!currentUser || sessionStartTime) return;
        
-        supabase.auth.onAuthStateChange((event) => {
-            if (event === 'SIGNED_OUT') location.reload();
-            else if (event === 'SIGNED_IN') init();
-        });
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('id', currentUser.id)
+            .single();
        
-        init();
-    });
-</script>
-</body>
-</html>
+        if (profile?.status === '☕ Перерыв') {
+            await unlockAchievement('returning');
+        }
+       
+        sessionStartTime = new Date();
+        await supabase.from('profiles').update({
+            study_session_start: sessionStartTime.toISOString(),
+            status: '📚 Учусь',
+            last_seen: new Date().toISOString()
+        }).eq('id', currentUser.id);
+       
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimerUI, 1000);
+        await loadGroupList();
+    }
+   
+    async function pauseSession() {
+        if (!currentUser || !sessionStartTime) return;
+       
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        if (elapsed > 0) {
+            totalSeconds += elapsed;
+            currentSessionCount++;
+            document.getElementById('sessionCount').textContent = currentSessionCount;
+        }
+       
+        sessionStartTime = null;
+        await supabase.from('profiles').update({
+            total_study_seconds: totalSeconds,
+            study_session_start: null,
+            status: '☕ Перерыв',
+            last_seen: new Date().toISOString
