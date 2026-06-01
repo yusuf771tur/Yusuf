@@ -52,12 +52,6 @@
             padding-left: 12px;
         }
 
-        h3 {
-            font-size: 1rem;
-            margin: 12px 0 8px 0;
-            color: #1e293b;
-        }
-
         .btn-google {
             background: #4285F4;
             color: white;
@@ -174,7 +168,7 @@
         .btn-danger { background: #ef4444; color: white; }
         .btn-sm { padding: 4px 12px; font-size: 0.8rem; }
 
-        .user-item, .note-item, .poll-item {
+        .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -199,17 +193,12 @@
             background: #94a3b8;
         }
 
-        .leaderboard-item, .poll-option {
+        .leaderboard-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px;
             border-bottom: 1px solid #e2e8f0;
-            transition: background 0.2s;
-        }
-
-        .leaderboard-item:hover, .poll-option:hover {
-            background: #f1f5f9;
         }
 
         .medal {
@@ -277,8 +266,6 @@
             border-radius: 16px;
             padding: 12px;
             text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
         }
 
         .achievement-card.unlocked {
@@ -294,17 +281,6 @@
         .achievement-icon {
             font-size: 2rem;
             margin-bottom: 8px;
-        }
-
-        .achievement-title {
-            font-weight: 700;
-            font-size: 0.85rem;
-            margin-bottom: 4px;
-        }
-
-        .achievement-desc {
-            font-size: 0.7rem;
-            color: #64748b;
         }
 
         .notification {
@@ -341,6 +317,15 @@
             color: #64748b;
         }
 
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px;
+            text-align: center;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -367,77 +352,11 @@
             margin-top: 4px;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
+        .note-item, .poll-item {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 8px;
             border-radius: 12px;
-            font-size: 0.9rem;
-        }
-
-        .note-content {
-            flex: 1;
-            font-size: 0.85rem;
-            color: #475569;
-        }
-
-        .poll-stats {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 8px;
-        }
-
-        .vote-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
-            cursor: pointer;
-        }
-
-        .delete-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            margin-left: 8px;
         }
     </style>
 </head>
@@ -504,14 +423,14 @@
 
     <div class="card hidden" id="notesCard">
         <h2>📝 Мои заметки</h2>
-        <button class="btn btn-primary btn-sm" id="addNoteBtn" style="margin-bottom: 12px;">+ Новая заметка</button>
-        <div id="notesList"></div>
+        <button class="btn btn-primary btn-sm" id="addNoteBtn">+ Новая заметка</button>
+        <div id="notesList" style="margin-top: 12px;"></div>
     </div>
 
     <div class="card hidden" id="pollsCard">
         <h2>📊 Опросы группы</h2>
-        <button class="btn btn-primary btn-sm" id="createPollBtn" style="margin-bottom: 12px;">+ Создать опрос</button>
-        <div id="pollsList"></div>
+        <button class="btn btn-primary btn-sm" id="createPollBtn">+ Создать опрос</button>
+        <div id="pollsList" style="margin-top: 12px;"></div>
     </div>
 
     <div class="card full-width hidden" id="achievementsCard">
@@ -529,460 +448,376 @@
     </div>
 </div>
 
-<div id="noteModal" class="modal">
-    <div class="modal-content">
-        <h3>✏️ Новая заметка</h3>
-        <div class="form-group">
-            <label>Заголовок</label>
-            <input type="text" id="noteTitle" placeholder="Например: Важная формула">
-        </div>
-        <div class="form-group">
-            <label>Содержание</label>
-            <textarea id="noteContent" rows="4" placeholder="Ваша заметка..."></textarea>
-        </div>
-        <div class="form-group">
-            <label>Цвет (тема)</label>
-            <select id="noteColor">
-                <option value="white">Белый</option>
-                <option value="#fef3c7">Желтый</option>
-                <option value="#d1fae5">Зеленый</option>
-                <option value="#fee2e2">Красный</option>
-            </select>
-        </div>
-        <button class="btn btn-primary btn-sm" id="saveNoteBtn">Сохранить</button>
-        <button class="btn btn-danger btn-sm" id="closeNoteModal">Отмена</button>
-    </div>
-</div>
-
-<div id="pollModal" class="modal">
-    <div class="modal-content">
-        <h3>📊 Создать опрос</h3>
-        <div class="form-group">
-            <label>Вопрос</label>
-            <input type="text" id="pollQuestion" placeholder="Например: Какой предмет сложнее всего?">
-        </div>
-        <div class="form-group">
-            <label>Варианты ответов (через запятую)</label>
-            <input type="text" id="pollOptions" placeholder="Математика, Физика, Программирование">
-        </div>
-        <button class="btn btn-primary btn-sm" id="savePollBtn">Создать</button>
-        <button class="btn btn-danger btn-sm" id="closePollModal">Отмена</button>
-    </div>
-</div>
-
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-   
+    
+    console.log('🚀 Приложение загружается...');
+    
     const SUPABASE_URL = 'https://qbykreduhwmlriyuhnxs.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFieWtyZWR1aHdtbHJpeXVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODQ1MzcsImV4cCI6MjA5MjI2MDUzN30.hT3f3TIZfiZ044tmaS899sUS-2O9MspbAFvldG8e-hQ';
-   
+    
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-   
+    
     let currentUser = null;
-    let sessionStartTime = null;
-    let totalSeconds = 0;
     let timerInterval = null;
-    let heartbeatInterval = null;
+    let totalSeconds = 0;
+    let sessionStartTime = null;
     let currentSessionCount = 0;
-   
-    const ACHIEVEMENTS_CONFIG = {
-        early_bird: { id: 'early_bird', title: '🌅 Ранняя пташка', desc: 'Зашел на платформу до 8:00', icon: '🌅' },
-        marathon: { id: 'marathon', title: '🏃 Марафонец', desc: 'Проучился более 2 часов за раз', icon: '🏃' },
-        activist: { id: 'activist', title: '💬 Активист', desc: 'Написал 20 сообщений в чате', icon: '💬' },
-        first_step: { id: 'first_step', title: '🎯 Первый шаг', desc: 'Прошел первую учебную сессию', icon: '🎯' },
-        returning: { id: 'returning', title: '🔄 Возвращение', desc: 'Вернулся к учёбе после перерыва', icon: '🔄' },
-        note_master: { id: 'note_master', title: '📝 Мастер заметок', desc: 'Создал 10 заметок', icon: '📝' },
-        poll_creator: { id: 'poll_creator', title: '🎯 Организатор', desc: 'Создал 3 опроса', icon: '🎯' }
+    
+    const achievements = {
+        early_bird: { title: '🌅 Ранняя пташка', desc: 'Зашел до 8:00' },
+        marathon: { title: '🏃 Марафонец', desc: 'Учился 2+ часа' },
+        activist: { title: '💬 Активист', desc: '20 сообщений' },
+        first_step: { title: '🎯 Первый шаг', desc: 'Первая сессия' }
     };
-   
-    function showNotification(message, title = 'Уведомление') {
+    
+    function showNotification(msg, title = 'Уведомление') {
         const notification = document.createElement('div');
         notification.className = 'notification';
-        notification.innerHTML = `<strong>${title}</strong><br>${message}`;
+        notification.innerHTML = `<strong>${title}</strong><br>${msg}`;
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
     }
-   
-    async function unlockAchievement(achievementId) {
-        if (!currentUser) return false;
-       
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('achievements')
-            .eq('id', currentUser.id)
-            .single();
-       
-        let currentAchievements = profile?.achievements || [];
-        if (currentAchievements.includes(achievementId)) return false;
-       
-        currentAchievements.push(achievementId);
-       
-        const { error } = await supabase
-            .from('profiles')
-            .update({ achievements: currentAchievements })
-            .eq('id', currentUser.id);
-       
-        if (!error) {
-            const achievement = ACHIEVEMENTS_CONFIG[achievementId];
-            showNotification(`${achievement.title}: ${achievement.desc}`, '🎉 Новое достижение!');
-            await loadAchievements();
-            await updateUserStats();
-            return true;
-        }
-        return false;
+    
+    function formatTime(sec) {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
-   
-    function formatTime(seconds) {
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-        const s = seconds % 60;
-        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-   
-    function formatTotal(seconds) {
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
+    
+    function formatTotal(sec) {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
         return h > 0 ? `${h}ч ${m}мин` : `${m} мин`;
     }
-   
-    function updateTimerUI() {
-        const timerDisplay = document.getElementById('timerDisplay');
-        const totalDisplay = document.getElementById('totalStudyDisplay');
-        if (sessionStartTime) {
-            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-            timerDisplay.textContent = formatTime(elapsed);
-        } else {
-            timerDisplay.textContent = '00:00:00';
+    
+    async function init() {
+        console.log('🔐 Проверяем авторизацию...');
+        
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error) {
+            console.error('Ошибка получения пользователя:', error);
+            showAuthForm();
+            return;
         }
-        totalDisplay.textContent = `📚 Всего учёбы: ${formatTotal(totalSeconds)}`;
+        
+        if (user) {
+            console.log('✅ Пользователь найден:', user.email);
+            currentUser = user;
+            await loadUserProfile();
+            showApp();
+        } else {
+            console.log('👤 Пользователь не авторизован');
+            showAuthForm();
+        }
     }
-   
+    
+    async function loadUserProfile() {
+        console.log('📥 Загружаем профиль...');
+        
+        let { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+        
+        if (error && error.code === 'PGRST116') {
+            console.log('📝 Профиль не найден, создаем...');
+            const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert([{
+                    id: currentUser.id,
+                    username: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
+                    avatar_url: currentUser.user_metadata?.avatar_url,
+                    status: '🏠 Дома',
+                    total_study_seconds: 0,
+                    message_count: 0,
+                    achievements: []
+                }])
+                .select()
+                .single();
+            
+            if (insertError) {
+                console.error('❌ Ошибка создания профиля:', insertError);
+                showNotification('Ошибка создания профиля', '⚠️');
+                return;
+            }
+            profile = newProfile;
+        } else if (error) {
+            console.error('❌ Ошибка загрузки профиля:', error);
+            showNotification('Ошибка загрузки профиля', '⚠️');
+            return;
+        }
+        
+        if (profile) {
+            totalSeconds = profile.total_study_seconds || 0;
+            document.getElementById('sessionCount').textContent = currentSessionCount;
+            document.getElementById('totalStudyDisplay').textContent = `📚 Всего учёбы: ${formatTotal(totalSeconds)}`;
+            document.getElementById('userName').textContent = profile.username || 'Студент';
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userAvatar').textContent = (profile.username?.[0] || currentUser.email[0]).toUpperCase();
+            
+            await loadAchievements();
+            await loadLeaderboard();
+            await loadNotes();
+            await loadPolls();
+            await loadMessages();
+            await loadGroupList();
+            
+            setInterval(() => loadGroupList(), 10000);
+            setInterval(() => loadLeaderboard(), 15000);
+        }
+    }
+    
     async function loadAchievements() {
-        if (!currentUser) return;
-       
         const { data: profile } = await supabase
             .from('profiles')
             .select('achievements')
             .eq('id', currentUser.id)
             .single();
-       
+        
         const userAchievements = profile?.achievements || [];
         const container = document.getElementById('achievementsList');
-        if (!container) return;
-       
-        container.innerHTML = Object.values(ACHIEVEMENTS_CONFIG).map(ach => {
-            const isUnlocked = userAchievements.includes(ach.id);
-            return `
-                <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}">
-                    <div class="achievement-icon">${ach.icon}</div>
-                    <div class="achievement-title">${ach.title}</div>
-                    <div class="achievement-desc">${ach.desc}</div>
-                </div>
-            `;
-        }).join('');
+        container.innerHTML = Object.entries(achievements).map(([id, ach]) => `
+            <div class="achievement-card ${userAchievements.includes(id) ? 'unlocked' : 'locked'}">
+                <div class="achievement-icon">${ach.title.split(' ')[0]}</div>
+                <div class="achievement-title">${ach.title}</div>
+                <div class="achievement-desc">${ach.desc}</div>
+            </div>
+        `).join('');
+        document.getElementById('achievementCount').textContent = `${userAchievements.length}/${Object.keys(achievements).length}`;
     }
-   
+    
     async function loadLeaderboard() {
-        const { data: topStudents, error } = await supabase
+        const { data: topStudents } = await supabase
             .from('profiles')
             .select('username, total_study_seconds')
             .order('total_study_seconds', { ascending: false })
             .limit(10);
-       
-        if (error || !topStudents) return;
-       
-        const container = document.getElementById('leaderboardList');
-        if (!container) return;
-       
-        if (currentUser) {
-            const { data: allUsers } = await supabase
-                .from('profiles')
-                .select('id, total_study_seconds')
-                .order('total_study_seconds', { ascending: false });
-           
-            if (allUsers) {
-                const userRank = allUsers.findIndex(u => u.id === currentUser.id) + 1;
-                document.getElementById('rankPlace').textContent = `#${userRank}`;
-            }
-        }
-       
-        container.innerHTML = topStudents.map((student, index) => {
-            let medal = '👤';
-            if (index === 0) medal = '🥇';
-            else if (index === 1) medal = '🥈';
-            else if (index === 2) medal = '🥉';
-           
-            return `
-                <div class="leaderboard-item">
-                    <div class="user-left">
-                        <span class="medal">${medal}</span>
-                        <div>
-                            <strong>${escapeHtml(student.username || 'Студент')}</strong>
-                            <div style="font-size: 0.75rem; color: #94a3b8;">Место #${index + 1}</div>
+        
+        if (topStudents) {
+            const container = document.getElementById('leaderboardList');
+            container.innerHTML = topStudents.map((s, i) => {
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '👤';
+                return `
+                    <div class="leaderboard-item">
+                        <div class="user-left">
+                            <span class="medal">${medal}</span>
+                            <strong>${s.username || 'Студент'}</strong>
                         </div>
+                        <div>${formatTotal(s.total_study_seconds || 0)}</div>
                     </div>
-                    <div style="font-weight: bold; color: #facc15;">
-                        ${formatTotal(student.total_study_seconds || 0)}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-   
-    async function updateUserStats() {
-        if (!currentUser) return;
-       
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('message_count, achievements')
-            .eq('id', currentUser.id)
-            .single();
-       
-        if (profile) {
-            document.getElementById('messageCount').textContent = profile.message_count || 0;
-            document.getElementById('achievementCount').textContent = (profile.achievements?.length || 0) + '/' + Object.keys(ACHIEVEMENTS_CONFIG).length;
+                `;
+            }).join('');
         }
     }
-   
+    
     async function loadNotes() {
-        if (!currentUser) return;
-       
-        const { data: notes, error } = await supabase
+        const { data: notes } = await supabase
             .from('notes')
             .select('*')
             .eq('user_id', currentUser.id)
             .order('created_at', { ascending: false });
-       
-        if (error) {
-            console.error('Ошибка загрузки заметок:', error);
-            return;
-        }
-       
+        
         const container = document.getElementById('notesList');
-        if (!container) return;
-       
-        if (!notes || notes.length === 0) {
-            container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">📭 Нет заметок. Создайте первую!</p>';
+        if (!notes?.length) {
+            container.innerHTML = '<div style="color:#94a3b8; text-align:center;">Нет заметок</div>';
             return;
         }
-       
-        if (notes.length >= 10) {
-            await unlockAchievement('note_master');
-        }
-       
-        container.innerHTML = notes.map(note => `
-            <div class="note-item" style="background: ${note.color || '#f8fafc'}; border-radius: 12px; margin-bottom: 8px; flex-direction: column; align-items: flex-start;">
-                <div style="display: flex; justify-content: space-between; width: 100%;">
-                    <strong style="font-size: 0.9rem;">${escapeHtml(note.title)}</strong>
-                    <div>
-                        <button class="delete-btn" onclick="window.deleteNote('${note.id}')">🗑</button>
-                    </div>
-                </div>
-                <div class="note-content" style="margin-top: 8px;">${escapeHtml(note.content)}</div>
-                <div style="font-size: 0.65rem; color: #64748b; margin-top: 8px;">📅 ${new Date(note.created_at).toLocaleString()}</div>
+        
+        container.innerHTML = notes.map(n => `
+            <div class="note-item" style="background:${n.color || '#f8fafc'}">
+                <div><strong>${escapeHtml(n.title)}</strong></div>
+                <div style="font-size:0.85rem;">${escapeHtml(n.content)}</div>
+                <button onclick="window.deleteNote('${n.id}')" style="margin-top:8px;">🗑</button>
             </div>
         `).join('');
     }
-   
-    window.deleteNote = async (noteId) => {
-        if (confirm('Удалить заметку?')) {
-            await supabase.from('notes').delete().eq('id', noteId);
-            await loadNotes();
-            showNotification('Заметка удалена');
-        }
+    
+    window.deleteNote = async (id) => {
+        await supabase.from('notes').delete().eq('id', id);
+        await loadNotes();
+        showNotification('Заметка удалена');
     };
-   
-    async function createNote(title, content, color) {
-        if (!currentUser) return;
-       
-        const { error } = await supabase.from('notes').insert({
-            user_id: currentUser.id,
-            title: title,
-            content: content,
-            color: color,
-            created_at: new Date().toISOString()
-        });
-       
-        if (error) {
-            console.error('Ошибка создания заметки:', error);
-            showNotification('Ошибка при создании заметки');
-        } else {
-            showNotification('✅ Заметка сохранена!');
-            await loadNotes();
-        }
-    }
-   
+    
     async function loadPolls() {
-        if (!currentUser) return;
-       
-        const { data: polls, error } = await supabase
+        const { data: polls } = await supabase
             .from('polls')
             .select('*')
             .order('created_at', { ascending: false });
-       
-        if (error) {
-            console.error('Ошибка загрузки опросов:', error);
-            return;
-        }
-       
+        
         const container = document.getElementById('pollsList');
-        if (!container) return;
-       
-        const userPolls = polls?.filter(p => p.created_by === currentUser.id) || [];
-        if (userPolls.length >= 3) {
-            await unlockAchievement('poll_creator');
-        }
-       
-        if (!polls || polls.length === 0) {
-            container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">📊 Нет опросов. Создайте первый!</p>';
+        if (!polls?.length) {
+            container.innerHTML = '<div style="color:#94a3b8; text-align:center;">Нет опросов</div>';
             return;
         }
-       
-        for (const poll of polls) {
-            const { data: author } = await supabase
-                .from('profiles')
-                .select('username')
-                .eq('id', poll.created_by)
-                .single();
-           
-            const { data: votes } = await supabase
-                .from('poll_votes')
-                .select('option_index, user_id')
-                .eq('poll_id', poll.id);
-           
-            const totalVotes = votes?.length || 0;
-            const userVote = votes?.find(v => v.user_id === currentUser.id);
-            const options = poll.options || [];
-           
-            const optionStats = options.map((opt, idx) => {
-                const count = votes?.filter(v => v.option_index === idx).length || 0;
-                const percent = totalVotes > 0 ? (count / totalVotes * 100).toFixed(1) : 0;
-                return { text: opt, count, percent };
-            });
-           
-            const pollHtml = `
-                <div class="poll-item" style="flex-direction: column; align-items: flex-start; margin-bottom: 16px;">
-                    <div style="display: flex; justify-content: space-between; width: 100%;">
-                        <strong>📊 ${escapeHtml(poll.question)}</strong>
-                        <span style="font-size: 0.7rem; color: #64748b;">Автор: ${escapeHtml(author?.username || 'Студент')}</span>
-                    </div>
-                    <div style="margin-top: 12px; width: 100%;">
-                        ${optionStats.map((opt, idx) => `
-                            <div class="poll-option" style="flex-direction: column; align-items: flex-start;">
-                                <div style="display: flex; justify-content: space-between; width: 100%;">
-                                    <span>${escapeHtml(opt.text)}</span>
-                                    <span>${opt.count} голосов (${opt.percent}%)</span>
-                                </div>
-                                <div class="progress-bar" style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 4px;">
-                                    <div style="width: ${opt.percent}%; height: 100%; background: #667eea; border-radius: 3px;"></div>
-                                </div>
-                                ${!userVote && currentUser.id !== poll.created_by ? `<button class="vote-btn" style="margin-top: 6px;" onclick="window.votePoll('${poll.id}', ${idx})">Голосовать</button>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="poll-stats">📊 Всего голосов: ${totalVotes}</div>
+        
+        container.innerHTML = polls.map(p => `
+            <div class="poll-item" style="background:#f8fafc">
+                <strong>📊 ${escapeHtml(p.question)}</strong>
+                <div style="font-size:0.8rem; margin-top:8px;">
+                    Вариантов: ${p.options?.length || 0}
                 </div>
-            `;
-            
-            if (container.innerHTML) {
-                container.innerHTML += pollHtml;
-            } else {
-                container.innerHTML = pollHtml;
-            }
-        }
+            </div>
+        `).join('');
     }
-   
-    window.votePoll = async (pollId, optionIndex) => {
-        if (!currentUser) return;
-       
-        const { data: existing } = await supabase
-            .from('poll_votes')
-            .select('id')
-            .eq('poll_id', pollId)
-            .eq('user_id', currentUser.id)
-            .single();
-       
-        if (existing) {
-            showNotification('Вы уже голосовали в этом опросе!', '⚠️');
+    
+    async function loadMessages() {
+        const { data: messages } = await supabase
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: true })
+            .limit(50);
+        
+        const container = document.getElementById('chatMessages');
+        if (!messages?.length) {
+            container.innerHTML = '<div style="text-align:center; color:#94a3b8;">Нет сообщений</div>';
             return;
         }
-       
-        const { error } = await supabase.from('poll_votes').insert({
-            poll_id: pollId,
-            user_id: currentUser.id,
-            option_index: optionIndex,
-            voted_at: new Date().toISOString()
-        });
-       
-        if (error) {
-            console.error('Ошибка голосования:', error);
-            showNotification('Ошибка при голосовании');
-        } else {
-            showNotification('Ваш голос учтен!', '✅');
-            document.getElementById('pollsList').innerHTML = '';
-            await loadPolls();
-        }
-    };
-   
-    async function createPoll(question, optionsArray) {
-        if (!currentUser) return;
-       
-        const { error } = await supabase.from('polls').insert({
-            question: question,
-            options: optionsArray,
-            created_by: currentUser.id,
-            created_at: new Date().toISOString(),
-            is_active: true
-        });
-       
-        if (error) {
-            console.error('Ошибка создания опроса:', error);
-            showNotification('Ошибка при создании опроса');
-        } else {
-            showNotification('✅ Опрос создан! Пригласите других голосовать!');
-            document.getElementById('pollsList').innerHTML = '';
-            await loadPolls();
-        }
+        
+        container.innerHTML = messages.map(m => `
+            <div class="message">
+                <strong>${escapeHtml(m.username)}</strong>
+                <span class="message-time">${new Date(m.created_at).toLocaleTimeString()}</span>
+                <div>${escapeHtml(m.message)}</div>
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
     }
-   
-    async function startSession() {
-        if (!currentUser || sessionStartTime) return;
-       
-        const { data: profile } = await supabase
+    
+    async function loadGroupList() {
+        const { data: users } = await supabase
             .from('profiles')
-            .select('status')
-            .eq('id', currentUser.id)
-            .single();
-       
-        if (profile?.status === '☕ Перерыв') {
-            await unlockAchievement('returning');
+            .select('username, status, last_seen');
+        
+        if (users) {
+            const now = new Date();
+            const online = users.filter(u => u.last_seen && new Date(u.last_seen) > new Date(now - 120000)).length;
+            document.getElementById('onlineCount').textContent = online;
+            
+            const container = document.getElementById('groupList');
+            container.innerHTML = users.map(u => `
+                <div class="user-item">
+                    <div class="user-left">
+                        <span class="online-dot"></span>
+                        <strong>${escapeHtml(u.username || 'Аноним')}</strong>
+                    </div>
+                    <div>${u.status || '🏠'}</div>
+                </div>
+            `).join('');
         }
-       
-        sessionStartTime = new Date();
-        await supabase.from('profiles').update({
-            study_session_start: sessionStartTime.toISOString(),
-            status: '📚 Учусь',
-            last_seen: new Date().toISOString()
-        }).eq('id', currentUser.id);
-       
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(updateTimerUI, 1000);
-        await loadGroupList();
     }
-   
-    async function pauseSession() {
-        if (!currentUser || !sessionStartTime) return;
-       
-        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-        if (elapsed > 0) {
-            totalSeconds += elapsed;
-            currentSessionCount++;
-            document.getElementById('sessionCount').textContent = currentSessionCount;
+    
+    function showAuthForm() {
+        const container = document.getElementById('authContent');
+        container.innerHTML = `
+            <button class="btn-google" id="googleLoginBtn">
+                🚀 Войти через Google
+            </button>
+            <p style="margin-top: 20px; text-align: center; color: #64748b;">
+                Войдите, чтобы использовать платформу
+            </p>
+        `;
+        
+        document.getElementById('googleLoginBtn')?.addEventListener('click', async () => {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.href }
+            });
+            if (error) alert('Ошибка: ' + error.message);
+        });
+    }
+    
+    function showApp() {
+        document.getElementById('authCard').classList.add('hidden');
+        document.getElementById('appCard').classList.remove('hidden');
+        document.getElementById('groupCard').classList.remove('hidden');
+        document.getElementById('leaderboardCard').classList.remove('hidden');
+        document.getElementById('notesCard').classList.remove('hidden');
+        document.getElementById('pollsCard').classList.remove('hidden');
+        document.getElementById('achievementsCard').classList.remove('hidden');
+        document.getElementById('chatCard').classList.remove('hidden');
+        
+        // Обновляем last_seen каждые 30 секунд
+        setInterval(async () => {
+            if (currentUser) {
+                await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', currentUser.id);
+            }
+        }, 30000);
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+    }
+    
+    // Слушатели событий
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        location.reload();
+    });
+    
+    document.getElementById('sendBtn')?.addEventListener('click', async () => {
+        const input = document.getElementById('chatInput');
+        const text = input.value.trim();
+        if (text && currentUser) {
+            await supabase.from('messages').insert({
+                user_id: currentUser.id,
+                username: document.getElementById('userName').textContent,
+                message: text,
+                created_at: new Date().toISOString()
+            });
+            input.value = '';
+            await loadMessages();
         }
-       
-        sessionStartTime = null;
-        await supabase.from('profiles').update({
-            total_study_seconds: totalSeconds,
-            study_session_start: null,
-            status: '☕ Перерыв',
-            last_seen: new Date().toISOString
+    });
+    
+    document.getElementById('addNoteBtn')?.addEventListener('click', async () => {
+        const title = prompt('Заголовок заметки:');
+        const content = prompt('Содержание:');
+        if (title && content) {
+            await supabase.from('notes').insert({
+                user_id: currentUser.id,
+                title: title,
+                content: content,
+                created_at: new Date().toISOString()
+            });
+            await loadNotes();
+            showNotification('Заметка создана!', '✅');
+        }
+    });
+    
+    document.getElementById('createPollBtn')?.addEventListener('click', async () => {
+        const question = prompt('Вопрос для опроса:');
+        const optionsStr = prompt('Варианты ответов (через запятую):');
+        if (question && optionsStr) {
+            const options = optionsStr.split(',').map(o => o.trim());
+            await supabase.from('polls').insert({
+                question: question,
+                options: options,
+                created_by: currentUser.id,
+                created_at: new Date().toISOString()
+            });
+            await loadPolls();
+            showNotification('Опрос создан!', '✅');
+        }
+    });
+    
+    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') document.getElementById('sendBtn').click();
+    });
+    
+    // Подписка на реальные обновления
+    supabase.channel('public')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => loadMessages())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => loadNotes())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'polls' }, () => loadPolls())
+        .subscribe();
+    
+    // Запуск
+    init();
+</script>
+</body>
+</html>
