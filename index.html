@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учебная платформа</title>
+    <title>Учебная платформа | Трекер учебы</title>
     <style>
         * {
             margin: 0;
@@ -13,21 +13,21 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 24px;
         }
 
         .full-width {
-            grid-column: span 3;
+            grid-column: span 2;
         }
 
         .card {
@@ -153,11 +153,8 @@
         .btn-start { background: #10b981; color: white; }
         .btn-pause { background: #f59e0b; color: #1e293b; }
         .btn-end { background: #ef4444; color: white; }
-        .btn-primary { background: #667eea; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-sm { padding: 4px 12px; font-size: 0.8rem; }
 
-        .user-item, .note-item, .poll-item {
+        .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -255,7 +252,6 @@
             border-radius: 16px;
             padding: 12px;
             text-align: center;
-            cursor: pointer;
         }
 
         .achievement-card.unlocked {
@@ -313,7 +309,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
             margin-bottom: 20px;
         }
@@ -335,74 +331,6 @@
             font-size: 0.7rem;
             color: #64748b;
             margin-top: 4px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-        }
-
-        .vote-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-
-        .poll-option {
-            margin-bottom: 12px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e2e8f0;
-            border-radius: 3px;
-            margin-top: 4px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #667eea;
-            border-radius: 3px;
-            transition: width 0.3s;
         }
     </style>
 </head>
@@ -439,7 +367,6 @@
             <div class="stat-card"><div class="stat-value" id="sessionCount">0</div><div class="stat-label">Сессий</div></div>
             <div class="stat-card"><div class="stat-value" id="messageCount">0</div><div class="stat-label">Сообщений</div></div>
             <div class="stat-card"><div class="stat-value" id="achievementCount">0</div><div class="stat-label">Достижений</div></div>
-            <div class="stat-card"><div class="stat-value" id="rankPlace">#0</div><div class="stat-label">Место в рейтинге</div></div>
         </div>
     </div>
 
@@ -451,18 +378,6 @@
     <div class="card hidden" id="leaderboardCard">
         <h2>🏆 Топ студентов</h2>
         <div id="leaderboardList"></div>
-    </div>
-
-    <div class="card hidden" id="notesCard">
-        <h2>📝 Мои заметки</h2>
-        <button class="btn btn-primary btn-sm" id="addNoteBtn">+ Новая заметка</button>
-        <div id="notesList" style="margin-top: 12px;"></div>
-    </div>
-
-    <div class="card hidden" id="pollsCard">
-        <h2>📊 Опросы группы</h2>
-        <button class="btn btn-primary btn-sm" id="createPollBtn">+ Создать опрос</button>
-        <div id="pollsList" style="margin-top: 12px;"></div>
     </div>
 
     <div class="card full-width hidden" id="achievementsCard">
@@ -477,26 +392,6 @@
             <input type="text" id="chatInput" placeholder="Напишите сообщение...">
             <button class="send-btn" id="sendBtn">Отправить</button>
         </div>
-    </div>
-</div>
-
-<div id="noteModal" class="modal">
-    <div class="modal-content">
-        <h3>✏️ Новая заметка</h3>
-        <div class="form-group"><label>Заголовок</label><input type="text" id="noteTitle"></div>
-        <div class="form-group"><label>Содержание</label><textarea id="noteContent" rows="4"></textarea></div>
-        <button class="btn btn-primary btn-sm" id="saveNoteBtn">Сохранить</button>
-        <button class="btn btn-danger btn-sm" id="closeNoteModal">Отмена</button>
-    </div>
-</div>
-
-<div id="pollModal" class="modal">
-    <div class="modal-content">
-        <h3>📊 Создать опрос</h3>
-        <div class="form-group"><label>Вопрос</label><input type="text" id="pollQuestion"></div>
-        <div class="form-group"><label>Варианты (через запятую)</label><input type="text" id="pollOptions" placeholder="Вариант 1, Вариант 2, Вариант 3"></div>
-        <button class="btn btn-primary btn-sm" id="savePollBtn">Создать</button>
-        <button class="btn btn-danger btn-sm" id="closePollModal">Отмена</button>
     </div>
 </div>
 
@@ -518,9 +413,7 @@
         early_bird: { id: 'early_bird', title: '🌅 Ранняя пташка', desc: 'Зашел на платформу до 8:00', icon: '🌅' },
         marathon: { id: 'marathon', title: '🏃 Марафонец', desc: 'Проучился более 2 часов за раз', icon: '🏃' },
         activist: { id: 'activist', title: '💬 Активист', desc: 'Написал 20 сообщений', icon: '💬' },
-        first_step: { id: 'first_step', title: '🎯 Первый шаг', desc: 'Прошел первую сессию', icon: '🎯' },
-        note_master: { id: 'note_master', title: '📝 Мастер заметок', desc: 'Создал 5 заметок', icon: '📝' },
-        poll_creator: { id: 'poll_creator', title: '🎯 Организатор', desc: 'Создал 3 опроса', icon: '🎯' }
+        first_step: { id: 'first_step', title: '🎯 Первый шаг', desc: 'Прошел первую сессию', icon: '🎯' }
     };
     
     function showNotification(msg, title = 'Уведомление') {
@@ -591,130 +484,6 @@
         document.getElementById('achievementCount').textContent = `${userAchievements.length}/${Object.keys(ACHIEVEMENTS).length}`;
     }
     
-    async function loadNotes() {
-        const { data: notes } = await supabase
-            .from('notes')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .order('created_at', { ascending: false });
-        
-        const container = document.getElementById('notesList');
-        
-        if (!notes || notes.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">📭 Нет заметок</div>';
-            return;
-        }
-        
-        if (notes.length >= 5) await unlockAchievement('note_master');
-        
-        container.innerHTML = notes.map(note => `
-            <div class="note-item" style="background: ${note.color || '#f8fafc'}; border-radius: 12px; margin-bottom: 8px; flex-direction: column; align-items: flex-start;">
-                <div style="display: flex; justify-content: space-between; width: 100%;">
-                    <strong>${escapeHtml(note.title)}</strong>
-                    <button onclick="window.deleteNote('${note.id}')" style="background:#ef4444; color:white; border:none; border-radius:20px; padding:4px 12px; cursor:pointer;">🗑</button>
-                </div>
-                <div style="margin-top: 8px; font-size:0.85rem;">${escapeHtml(note.content)}</div>
-                <div style="font-size:0.65rem; color:#64748b; margin-top:8px;">📅 ${new Date(note.created_at).toLocaleString()}</div>
-            </div>
-        `).join('');
-    }
-    
-    window.deleteNote = async (id) => {
-        if (confirm('Удалить заметку?')) {
-            await supabase.from('notes').delete().eq('id', id);
-            await loadNotes();
-            showNotification('Заметка удалена');
-        }
-    };
-    
-    async function loadPolls() {
-        const { data: polls } = await supabase
-            .from('polls')
-            .select('*, poll_votes(*)')
-            .order('created_at', { ascending: false });
-        
-        const container = document.getElementById('pollsList');
-        
-        if (!polls || polls.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">📊 Нет опросов</div>';
-            return;
-        }
-        
-        const userPolls = polls.filter(p => p.created_by === currentUser.id);
-        if (userPolls.length >= 3) await unlockAchievement('poll_creator');
-        
-        for (const poll of polls) {
-            const { data: author } = await supabase.from('profiles').select('username').eq('id', poll.created_by).single();
-            const votes = poll.poll_votes || [];
-            const totalVotes = votes.length;
-            const userVote = votes.find(v => v.user_id === currentUser.id);
-            const options = poll.options || [];
-            
-            const pollHtml = document.createElement('div');
-            pollHtml.className = 'poll-item';
-            pollHtml.style.cssText = 'flex-direction: column; align-items: flex-start; margin-bottom: 16px; background:#f8fafc; border-radius:12px;';
-            
-            pollHtml.innerHTML = `
-                <div style="display: flex; justify-content: space-between; width: 100%;">
-                    <strong>📊 ${escapeHtml(poll.question)}</strong>
-                    <span style="font-size:0.7rem; color:#64748b;">Автор: ${escapeHtml(author?.username || 'Студент')}</span>
-                </div>
-                <div id="poll-${poll.id}" style="margin-top: 12px; width: 100%;"></div>
-                <div class="poll-stats" style="margin-top: 8px;">📊 Всего голосов: ${totalVotes}</div>
-            `;
-            
-            container.appendChild(pollHtml);
-            
-            const optionsContainer = pollHtml.querySelector(`#poll-${poll.id}`);
-            
-            for (let idx = 0; idx < options.length; idx++) {
-                const opt = options[idx];
-                const count = votes.filter(v => v.option_index === idx).length;
-                const percent = totalVotes > 0 ? (count / totalVotes * 100).toFixed(1) : 0;
-                
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'poll-option';
-                optionDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>${escapeHtml(opt)}</span>
-                        <span>${count} (${percent}%)</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${percent}%;"></div>
-                    </div>
-                    ${!userVote && currentUser.id !== poll.created_by ? `<button class="vote-btn" onclick="window.votePoll('${poll.id}', ${idx})">👍 Голосовать</button>` : ''}
-                `;
-                optionsContainer.appendChild(optionDiv);
-            }
-        }
-    }
-    
-    window.votePoll = async (pollId, optionIndex) => {
-        const { data: existing } = await supabase
-            .from('poll_votes')
-            .select('id')
-            .eq('poll_id', pollId)
-            .eq('user_id', currentUser.id)
-            .single();
-        
-        if (existing) {
-            showNotification('Вы уже голосовали!', '⚠️');
-            return;
-        }
-        
-        const { error } = await supabase.from('poll_votes').insert({
-            poll_id: pollId,
-            user_id: currentUser.id,
-            option_index: optionIndex
-        });
-        
-        if (!error) {
-            showNotification('Голос учтен!', '✅');
-            document.getElementById('pollsList').innerHTML = '';
-            await loadPolls();
-        }
-    };
-    
     async function loadLeaderboard() {
         const { data: topStudents } = await supabase
             .from('profiles')
@@ -725,12 +494,6 @@
         const container = document.getElementById('leaderboardList');
         
         if (topStudents) {
-            const { data: allUsers } = await supabase.from('profiles').select('id, total_study_seconds').order('total_study_seconds', { ascending: false });
-            if (allUsers) {
-                const rank = allUsers.findIndex(u => u.id === currentUser.id) + 1;
-                document.getElementById('rankPlace').textContent = `#${rank}`;
-            }
-            
             container.innerHTML = topStudents.map((s, i) => {
                 const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '👤';
                 return `
@@ -879,8 +642,6 @@
             if (hour < 8) await unlockAchievement('early_bird');
             
             await loadAchievements();
-            await loadNotes();
-            await loadPolls();
             await loadLeaderboard();
             await loadMessages();
             await loadGroupList();
@@ -890,8 +651,6 @@
             document.getElementById('appCard').classList.remove('hidden');
             document.getElementById('groupCard').classList.remove('hidden');
             document.getElementById('leaderboardCard').classList.remove('hidden');
-            document.getElementById('notesCard').classList.remove('hidden');
-            document.getElementById('pollsCard').classList.remove('hidden');
             document.getElementById('achievementsCard').classList.remove('hidden');
             document.getElementById('chatCard').classList.remove('hidden');
             
@@ -902,16 +661,11 @@
             
             supabase.channel('public')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => loadMessages())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => loadNotes())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'polls' }, () => {
-                    document.getElementById('pollsList').innerHTML = '';
-                    loadPolls();
-                })
                 .subscribe();
         } else {
             document.getElementById('authContent').innerHTML = `
                 <button class="btn-google" id="googleLoginBtn">🚀 Войти через Google</button>
-                <p style="margin-top:20px; text-align:center; color:#64748b;">Войдите, чтобы использовать платформу</p>
+                <p style="margin-top:20px; text-align:center; color:#64748b;">Войдите, чтобы отслеживать учёбу и получать достижения</p>
             `;
             document.getElementById('googleLoginBtn')?.addEventListener('click', async () => {
                 await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.href } });
@@ -924,7 +678,6 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
     
-    // Event listeners
     document.getElementById('startBtn')?.addEventListener('click', startSession);
     document.getElementById('pauseBtn')?.addEventListener('click', pauseSession);
     document.getElementById('endBtn')?.addEventListener('click', pauseSession);
@@ -951,72 +704,9 @@
         }
     });
     
-    document.getElementById('addNoteBtn')?.addEventListener('click', () => {
-        document.getElementById('noteModal').style.display = 'flex';
+    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') document.getElementById('sendBtn').click();
     });
-    
-    document.getElementById('saveNoteBtn')?.addEventListener('click', async () => {
-        const title = document.getElementById('noteTitle').value;
-        const content = document.getElementById('noteContent').value;
-        if (title && content) {
-            await supabase.from('notes').insert({
-                user_id: currentUser.id,
-                title: title,
-                content: content,
-                color: 'white'
-            });
-            document.getElementById('noteModal').style.display = 'none';
-            document.getElementById('noteTitle').value = '';
-            document.getElementById('noteContent').value = '';
-            await loadNotes();
-            showNotification('Заметка создана!', '✅');
-        } else {
-            alert('Заполните заголовок и содержание');
-        }
-    });
-    
-    document.getElementById('createPollBtn')?.addEventListener('click', () => {
-        document.getElementById('pollModal').style.display = 'flex';
-    });
-    
-    document.getElementById('savePollBtn')?.addEventListener('click', async () => {
-        const question = document.getElementById('pollQuestion').value;
-        const optionsStr = document.getElementById('pollOptions').value;
-        if (question && optionsStr) {
-            const options = optionsStr.split(',').map(o => o.trim()).filter(o => o);
-            if (options.length >= 2) {
-                await supabase.from('polls').insert({
-                    question: question,
-                    options: options,
-                    created_by: currentUser.id
-                });
-                document.getElementById('pollModal').style.display = 'none';
-                document.getElementById('pollQuestion').value = '';
-                document.getElementById('pollOptions').value = '';
-                document.getElementById('pollsList').innerHTML = '';
-                await loadPolls();
-                showNotification('Опрос создан!', '✅');
-            } else {
-                alert('Введите минимум 2 варианта');
-            }
-        } else {
-            alert('Заполните все поля');
-        }
-    });
-    
-    document.getElementById('closeNoteModal')?.addEventListener('click', () => {
-        document.getElementById('noteModal').style.display = 'none';
-    });
-    
-    document.getElementById('closePollModal')?.addEventListener('click', () => {
-        document.getElementById('pollModal').style.display = 'none';
-    });
-    
-    window.onclick = (event) => {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-        }
-    };
     
     init();
 </script>
